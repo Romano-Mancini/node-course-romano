@@ -1,15 +1,22 @@
-class UserStore {
-	static users = [];
+export interface User {
+	id: number;
+	name: string;
+	email: string;
+	password: string;
+}
 
-	static get(id) {
-		return this.users.find((user) => user.id === Number(id));
+export class UserStore {
+	static users: User[] = [];
+
+	static get(id: number): User | undefined {
+		return this.users.find((user) => user.id === id);
 	}
 
-	static getByEmail(email) {
+	static getByEmail(email: string): User | undefined {
 		return this.users.find((user) => user.email === email);
 	}
 
-	static find(search = undefined) {
+	static find(search?: string): User[] {
 		return this.users.filter(
 			(user) =>
 				!search ||
@@ -19,13 +26,13 @@ class UserStore {
 		);
 	}
 
-	static add(user) {
+	static add(user: Omit<User, "id">): User {
 		const u = { ...user, id: this.users.length };
 		this.users.push(u);
 		return u;
 	}
 
-	static update(id, input) {
+	static update(id: number, input: User): User {
 		const current = this.get(id);
 		const user = { ...current, ...input };
 		this.users.splice(
@@ -36,12 +43,10 @@ class UserStore {
 		return user;
 	}
 
-	static delete(id) {
+	static delete(id: number) {
 		this.users.splice(
-			this.users.findIndex((x) => x.id === Number(id)),
+			this.users.findIndex((x) => x.id === id),
 			1,
 		);
 	}
 }
-
-module.exports = { UserStore };

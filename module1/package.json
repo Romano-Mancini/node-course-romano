@@ -4,8 +4,11 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "node src/server.js",
-		"dev": "node --watch src/server.js"
+		"build": "tsc",
+		"build:clean": "rm -rf build && pnpm run build",
+		"start": "node build/server.js",
+		"dev": "ts-node src/server.ts",
+		"test": "mocha -r ts-node/register ./src/tests/**/*.test.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -19,5 +22,11 @@
 	},
 	"dependencies": {
 		"express": "^5.2.1"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.6",
+		"@types/node": "^26.1.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^6.0.3"
 	}
 }
