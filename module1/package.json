@@ -1,0 +1,23 @@
+{
+	"name": "src",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node src/server.js",
+		"dev": "node --watch src/server.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "11.10.0",
+			"onFail": "download"
+		}
+	},
+	"dependencies": {
+		"express": "^5.2.1"
+	}
+}
