@@ -1,16 +1,40 @@
 import { UserStore } from "./user.store";
 import { type Request, type Response, type NextFunction } from "express";
+import { UserBody } from "../../../contracts/user.body";
+import { UserView } from "../../../contracts/user.view";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
-export const update = (req: Request, res: Response, next: NextFunction) => {
-	const rawId = req.params.id;
-	const idStr = Array.isArray(rawId) ? rawId[0] : rawId;
-	const id = Number(idStr);
-	const user = UserStore.get(id);
+export const update = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	let id = req.params.id;
+	const fieldsToUpdate = plainToInstance(UserBody, req.body, {
+		exposeUnsetFields: false,
+	});
+	const validationErrors = await validate(fieldsToUpdate, {
+		skipMissingProperties: true, // Allow partial updates
+		whitelist: true,
+		forbidNonWhitelisted: true,
+	});
 
-	if (!user) {
-		res.status(404).json({ error: "User not found" });
-		return;
+	if (
+		validationErrors.length ||
+		Array.isArray(id) ||
+		Number.isNaN(Number(id))
+	) {
+		return next(validationErrors);
 	}
-	const updated = UserStore.update(id, req.body);
-	res.json(updated);
+
+	const user = UserStore.get(Number(id));
+	if (!user) {
+		return res.status(404).json({ error: "User not found" });
+	}
+	const updated = UserStore.update(Number(id), {
+		...user,
+		...fieldsToUpdate,
+	});
+	res.json(plainToInstance(UserView, updated));
 };
