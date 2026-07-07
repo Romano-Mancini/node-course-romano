@@ -12,5 +12,5 @@ export const deleteUser = (req: Request, res: Response, next: NextFunction) => {
 	}
 	UserStore.delete(id);
 	res.status(204);
-	res.send();
+	res.json();
 };
