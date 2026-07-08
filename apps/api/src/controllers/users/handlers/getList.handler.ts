@@ -1,3 +1,5 @@
+import { plainToInstance } from "class-transformer";
+import { UserView } from "../../../contracts/user.view";
 import { prisma } from "../../../lib/prisma";
 
 export const getList = async (search?: string) => {
@@ -24,6 +26,5 @@ export const getList = async (search?: string) => {
 		where,
 		orderBy: { createdAt: "desc" },
 	});
-
-	return users;
+	return plainToInstance(UserView, users, { excludeExtraneousValues: true });
 };

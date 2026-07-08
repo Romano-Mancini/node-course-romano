@@ -1,6 +1,8 @@
 import { prisma } from "../../../lib/prisma";
 import { UserBody } from "../../../contracts/user.body";
 import bcrypt from "bcryptjs";
+import { plainToInstance } from "class-transformer";
+import { UserView } from "../../../contracts/user.view";
 
 export const create = async (body: UserBody) => {
 	const hashedPassword = await bcrypt.hash(body.password, 10);
@@ -13,5 +15,5 @@ export const create = async (body: UserBody) => {
 		},
 	});
 
-	return user;
+	return plainToInstance(UserView, user, { excludeExtraneousValues: true });
 };

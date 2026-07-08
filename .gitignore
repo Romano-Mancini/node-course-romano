@@ -8,3 +8,12 @@
 **/.playwright-mcp/
 
 code/example3/dist/
+
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+apps/api/data/
+.env
+!.env.example
