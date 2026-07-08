@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { prisma } from "./lib/prisma";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -25,6 +26,10 @@ async function bootstrap() {
 
 	// Set global prefix
 	app.setGlobalPrefix("api");
+
+	// Connect to database
+	await prisma.$connect();
+	console.log("Database connected successfully");
 
 	// Swagger configuration
 	const config = new DocumentBuilder()

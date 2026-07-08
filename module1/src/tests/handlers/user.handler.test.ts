@@ -1,50 +1,69 @@
 import { expect } from "chai";
 import { beforeEach, describe, it } from "mocha";
+import bcrypt from "bcryptjs";
+import { randomUUID } from "node:crypto";
 
 import { create } from "../../controllers/users/handlers/create.handler";
 import { deleteUser } from "../../controllers/users/handlers/delete.handler";
 import { get } from "../../controllers/users/handlers/get.handler";
 import { getList } from "../../controllers/users/handlers/getList.handler";
 import { update } from "../../controllers/users/handlers/update.handler";
-import { User, UserStore } from "../../controllers/users/handlers/user.store";
+import { prisma } from "../../lib/prisma";
 
-const userFixtures: User[] = [
+const userFixtures = [
 	{
 		name: "test1",
 		email: "test-user+1@panenco.com",
-		id: 0,
 		password: "password1",
 	},
 	{
 		name: "test2",
 		email: "test-user+2@panenco.com",
-		id: 1,
 		password: "password2",
 	},
 ];
 
 describe("Handler tests", () => {
 	describe("User Tests", () => {
-		beforeEach(() => {
-			UserStore.users = [...userFixtures]; // Clone the array
+		let users: any[];
+
+		beforeEach(async () => {
+			// Clean up database
+			await prisma.user.deleteMany();
+
+			// Create test users
+			users = await Promise.all(
+				userFixtures.map(async (fixture) => {
+					const hashedPassword = await bcrypt.hash(
+						fixture.password,
+						10,
+					);
+					return prisma.user.create({
+						data: {
+							name: fixture.name,
+							email: fixture.email,
+							password: hashedPassword,
+						},
+					});
+				}),
+			);
 		});
 
-		it("should get users", () => {
-			const res = getList(undefined);
-
-			expect(res.some((x) => x.name === "test2")).true;
+		it("should get users", async () => {
+			const res = await getList(undefined);
+			expect(res.some((x: any) => x.name === "test2")).true;
 		});
 
-		it("should get user by id", () => {
-			const res = get("1");
+		it("should get user by id", async () => {
+			const res = await get(users[1].id);
 
 			expect(res.name).equal("test2");
 			expect(res.email).equal("test-user+2@panenco.com");
 		});
 
-		it("should fail when getting user by unknown id", () => {
+		it("should fail when getting user by unknown id", async () => {
 			try {
-				get("999");
+				await get(randomUUID());
 			} catch (error: any) {
 				expect(error.message).equal("User not found");
 				return;
@@ -57,7 +76,7 @@ describe("Handler tests", () => {
 				email: "test-user+new@panenco.com",
 				name: "newUser",
 				password: "reallysecretstuff",
-			} as User;
+			};
 			const res = await create(body);
 
 			expect(res.name).equal("newUser");
@@ -67,23 +86,20 @@ describe("Handler tests", () => {
 		it("should update user", async () => {
 			const body = {
 				email: "test-user+updated@panenco.com",
-			} as User;
-			const id = 0;
-			const res = update(id.toString(), body);
+			};
+			const id = users[0].id;
+			const res = await update(id, body);
 
 			expect(res.email).equal(body.email);
 			expect(res.name).equal("test1");
-			expect(UserStore.users.find((x) => x.id === id)!.email).equal(
-				body.email,
-			);
 		});
 
-		it("should delete user by id", () => {
-			const initialCount = UserStore.users.length;
-			deleteUser("1");
+		it("should delete user by id", async () => {
+			const initialCount = await prisma.user.count();
+			await deleteUser(users[0].id);
 
-			expect(UserStore.users.some((x) => x.id === 1)).false;
-			expect(initialCount - 1).equal(UserStore.users.length);
+			const newCount = await prisma.user.count();
+			expect(initialCount - 1).equal(newCount);
 		});
 	});
 });

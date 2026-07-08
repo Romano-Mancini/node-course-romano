@@ -1,6 +1,29 @@
-import { User, UserStore } from "./user.store";
+import { prisma } from "../../../lib/prisma";
 
-export const getList = (search?: string): User[] => {
-	const users = UserStore.find(search);
-	return users;
+export const getList = async (search?: string) => {
+	const where = search
+		? {
+				OR: [
+					{
+						name: {
+							contains: search,
+							mode: "insensitive" as const,
+						},
+					},
+					{
+						email: {
+							contains: search,
+							mode: "insensitive" as const,
+						},
+					},
+				],
+			}
+		: {};
+
+	const users = await prisma.user.findMany({
+		where,
+		orderBy: { createdAt: "desc" },
+	});
+
+	return [users, users.length];
 };

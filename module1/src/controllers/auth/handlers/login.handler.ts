@@ -1,16 +1,21 @@
 import { UnauthorizedException } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
-
-import { LoginBody } from "../../../contracts/login.body";
-import { UserStore } from "../../users/handlers/user.store";
+import { prisma } from "../../../lib/prisma";
+import bcrypt from "bcryptjs";
 import config from "../../../config";
-import { AccessTokenView } from "../../../contracts/access.token.view";
+import { LoginBody } from "../../../contracts/login.body";
 
-export const createToken = async (
-	body: LoginBody,
-): Promise<AccessTokenView> => {
-	const user = UserStore.getByEmail(body.email);
-	if (!user || user.password !== body.password) {
+export const createToken = async (body: LoginBody) => {
+	const user = await prisma.user.findUnique({
+		where: { email: body.email },
+	});
+
+	if (!user) {
+		throw new UnauthorizedException("Invalid credentials");
+	}
+
+	const isPasswordValid = await bcrypt.compare(body.password, user.password);
+	if (!isPasswordValid) {
 		throw new UnauthorizedException("Invalid credentials");
 	}
 

@@ -7,6 +7,7 @@ import request from "supertest";
 import { AppModule } from "../../app.module";
 import { UserBody } from "../../contracts/user.body";
 import { User, UserStore } from "../../controllers/users/handlers/user.store";
+import { prisma } from "../../lib/prisma";
 
 describe("Integration tests", () => {
 	describe("User Tests", () => {
@@ -39,11 +40,15 @@ describe("Integration tests", () => {
 
 			app.setGlobalPrefix("api");
 
+			// Connect to database
+			await prisma.$connect();
+			console.log("Database connected successfully");
+
 			await app.init();
 		});
 
 		beforeEach(() => {
-			UserStore.users = []; // Clean up users before each test
+			prisma.user.deleteMany(); // Clean up users before each test
 		});
 
 		after(async () => {
