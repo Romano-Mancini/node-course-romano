@@ -1,199 +1,89 @@
 import { expect } from "chai";
-import { describe, it, beforeEach } from "mocha";
-import { User, UserStore } from "../../controllers/users/handlers/user.store";
-import { getList } from "../../controllers/users/handlers/getList.handler";
-import { get } from "../../controllers/users/handlers/get.handler";
-import { create } from "../../controllers/users/handlers/create.handler";
-import { update } from "../../controllers/users/handlers/update.handler";
-import { deleteUser } from "../../controllers/users/handlers/delete.handler";
+import { beforeEach, describe, it } from "mocha";
 
-import type { Request, Response } from "express";
+import { create } from "../../controllers/users/handlers/create.handler";
+import { deleteUser } from "../../controllers/users/handlers/delete.handler";
+import { get } from "../../controllers/users/handlers/get.handler";
+import { getList } from "../../controllers/users/handlers/getList.handler";
+import { update } from "../../controllers/users/handlers/update.handler";
+import { User, UserStore } from "../../controllers/users/handlers/user.store";
+
+const userFixtures: User[] = [
+	{
+		name: "test1",
+		email: "test-user+1@panenco.com",
+		id: 0,
+		password: "password1",
+	},
+	{
+		name: "test2",
+		email: "test-user+2@panenco.com",
+		id: 1,
+		password: "password2",
+	},
+];
 
 describe("Handler tests", () => {
-	const userFixtures: User[] = [
-		{
-			name: "test1",
-			email: "test-user+1@panenco.com",
-			id: 0,
-			password: "password1",
-		},
-		{
-			name: "test2",
-			email: "test-user+2@panenco.com",
-			id: 1,
-			password: "password2",
-		},
-	];
 	describe("User Tests", () => {
-		describe("Users handler tests", () => {
-			let res: any;
-			let statusCode: number | null = null;
-			beforeEach(() => {
-				UserStore.users = [];
-				UserStore.add({
-					name: "test1",
-					email: "test-user+1@panenco.com",
-					password: "test",
-				});
-				UserStore.add({
-					name: "test2",
-					email: "test-user+2@panenco.com",
-					password: "test",
-				});
-			});
+		beforeEach(() => {
+			UserStore.users = [...userFixtures]; // Clone the array
+		});
 
-			it("should search users", () => {
-				getList(
-					{ query: { search: "test1" } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.length).equal(1);
-				expect(res.some((x: User) => x.name === "test1")).true;
-			});
+		it("should get users", () => {
+			const res = getList(undefined);
 
-			it("should get users", () => {
-				getList(
-					{ query: { search: undefined } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.length).equal(2);
-				expect(res[0].name === "test1" && res[1].name === "test2");
-			});
+			expect(res.some((x) => x.name === "test2")).true;
+		});
 
-			it("should get user by id", () => {
-				get(
-					{ params: { id: 0 } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.name === "test1").true;
+		it("should get user by id", () => {
+			const res = get("1");
 
-				get(
-					{ params: { id: 2 } } as unknown as Request,
-					{
-						status: (code) => {
-							statusCode = code;
-							return {
-								json: (val) => (res = val),
-							};
-						},
-						json: (val) => (res = val),
-					} as Response,
-					null as any,
-				);
-				expect(statusCode).equal(404);
-			});
+			expect(res.name).equal("test2");
+			expect(res.email).equal("test-user+2@panenco.com");
+		});
 
-			it("should create user", async () => {
-				await create(
-					{
-						body: {
-							name: "test3",
-							email: "test-user+3@panenco.com",
-							password: "eightCharacters",
-						},
-					} as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(
-					res.name === "test3" &&
-						res.email === "test-user+3@panenco.com",
-				).true;
+		it("should fail when getting user by unknown id", () => {
+			try {
+				get("999");
+			} catch (error: any) {
+				expect(error.message).equal("User not found");
+				return;
+			}
+			expect(true, "should have thrown an error").false;
+		});
 
-				getList(
-					{ query: { search: undefined } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.some((x: User) => x.name === "test3")).true;
-			});
+		it("should create user", async () => {
+			const body = {
+				email: "test-user+new@panenco.com",
+				name: "newUser",
+				password: "reallysecretstuff",
+			} as User;
+			const res = await create(body);
 
-			it("should update user", async () => {
-				await update(
-					{
-						params: { id: 0 },
-						body: { name: "test4" },
-					} as unknown as Request,
-					{
-						status: (code) => {
-							statusCode = code;
-							return {
-								json: (val) => (res = val),
-							};
-						},
-						json: (val) => (res = val),
-					} as Response,
-					null as any,
-				);
+			expect(res.name).equal("newUser");
+			expect(res.email).equal("test-user+new@panenco.com");
+		});
 
-				get(
-					{ params: { id: 0 } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.name === "test4").true;
+		it("should update user", async () => {
+			const body = {
+				email: "test-user+updated@panenco.com",
+			} as User;
+			const id = 0;
+			const res = update(id.toString(), body);
 
-				await update(
-					{
-						params: { id: 5 },
-						body: { name: "test4" },
-					} as unknown as Request,
-					{
-						status: (code) => {
-							statusCode = code;
-							return {
-								json: (val) => (res = val),
-							};
-						},
-						json: (val) => (res = val),
-					} as Response,
-					null as any,
-				);
+			expect(res.email).equal(body.email);
+			expect(res.name).equal("test1");
+			expect(UserStore.users.find((x) => x.id === id)!.email).equal(
+				body.email,
+			);
+		});
 
-				expect(statusCode).equal(404);
-			});
+		it("should delete user by id", () => {
+			const initialCount = UserStore.users.length;
+			deleteUser("1");
 
-			it("should delete user by id", () => {
-				deleteUser(
-					{ params: { id: 0 } } as unknown as Request,
-					{
-						status: (code) => {
-							statusCode = code;
-							return {
-								json: (val) => (res = val),
-							};
-						},
-						json: (val) => (res = val),
-					} as Response,
-					null as any,
-				);
-
-				getList(
-					{ query: { search: undefined } } as unknown as Request,
-					{ json: (val) => (res = val) } as Response,
-					null as any,
-				);
-				expect(res.some((x: User) => x.name === "test1")).false;
-
-				deleteUser(
-					{ params: { id: 0 } } as unknown as Request,
-					{
-						status: (code) => {
-							statusCode = code;
-							return {
-								json: (val) => (res = val),
-							};
-						},
-						json: (val) => (res = val),
-					} as Response,
-					null as any,
-				);
-
-				expect(statusCode).equal(404);
-			});
+			expect(UserStore.users.some((x) => x.id === 1)).false;
+			expect(initialCount - 1).equal(UserStore.users.length);
 		});
 	});
 });

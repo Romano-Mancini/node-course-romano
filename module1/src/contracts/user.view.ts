@@ -1,10 +1,10 @@
 import { Exclude, Expose } from "class-transformer";
-import { IsEmail, IsString, IsNumber } from "class-validator";
+import { IsEmail, IsString, IsUUID } from "class-validator";
 
 @Exclude()
 class UserView {
 	@Expose()
-	@IsNumber()
+	@IsUUID()
 	public id: number;
 
 	@Expose()
