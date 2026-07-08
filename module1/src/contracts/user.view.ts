@@ -1,19 +1,24 @@
-import { Exclude, Expose } from "class-transformer";
+import { Exclude } from "class-transformer";
 import { IsEmail, IsString, IsUUID } from "class-validator";
 
-@Exclude()
 class UserView {
-	@Expose()
 	@IsUUID()
-	public id: number;
+	public id: string;
 
-	@Expose()
 	@IsString()
 	public name: string;
 
-	@Expose()
 	@IsEmail()
 	public email: string;
+
+	@Exclude()
+	public password: string;
+
+	@Exclude()
+	public createdAt: Date;
+
+	@Exclude()
+	public updatedAt: Date;
 }
 
 export { UserView };

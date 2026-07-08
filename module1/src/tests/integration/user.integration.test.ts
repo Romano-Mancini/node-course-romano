@@ -1,8 +1,7 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication, ValidationPipe } from "@nestjs/common";
-import { expect } from "chai";
-import { before, beforeEach, after, describe, it } from "mocha";
-import request from "supertest";
+const { Test } = require("@nestjs/testing");
+const { ValidationPipe } = require("@nestjs/common");
+const { expect } = require("chai");
+const request = require("supertest");
 
 import { AppModule } from "../../app.module";
 import { UserBody } from "../../contracts/user.body";
@@ -11,14 +10,12 @@ import { prisma } from "../../lib/prisma";
 
 describe("Integration tests", () => {
 	describe("User Tests", () => {
-		let app: INestApplication;
+		let app: any;
 
 		before(async () => {
-			const moduleFixture: TestingModule = await Test.createTestingModule(
-				{
-					imports: [AppModule],
-				},
-			).compile();
+			const moduleFixture = await Test.createTestingModule({
+				imports: [AppModule],
+			}).compile();
 
 			app = moduleFixture.createNestApplication();
 
@@ -47,8 +44,8 @@ describe("Integration tests", () => {
 			await app.init();
 		});
 
-		beforeEach(() => {
-			prisma.user.deleteMany(); // Clean up users before each test
+		beforeEach(async () => {
+			await prisma.user.deleteMany(); // Clean up users before each test
 		});
 
 		after(async () => {
@@ -66,10 +63,6 @@ describe("Integration tests", () => {
 				})
 				.expect(201);
 
-			expect(
-				UserStore.users.some((x) => x.email === createResponse.email),
-			).true;
-
 			// Login to get JWT token
 			const { body: loginResponse } = await request(app.getHttpServer())
 				.post(`/api/auth/login`)
@@ -82,9 +75,6 @@ describe("Integration tests", () => {
 			const token = loginResponse.token;
 			expect(token).to.be.a("string");
 
-			// Try to access protected endpoint without token (should fail)
-			await request(app.getHttpServer()).get(`/api/users`).expect(401);
-
 			// Get all users with valid token
 			const { body: getListRes } = await request(app.getHttpServer())
 				.get(`/api/users`)
@@ -92,6 +82,13 @@ describe("Integration tests", () => {
 				.expect(200);
 			expect(getListRes.length).equal(1);
 			expect(getListRes[0].name).equal("test");
+
+			expect(
+				getListRes.some((x: User) => x.email === createResponse.email),
+			).true;
+
+			// Try to access protected endpoint without token (should fail)
+			await request(app.getHttpServer()).get(`/api/users`).expect(401);
 
 			// Get the newly created user with token
 			const { body: getResponse } = await request(app.getHttpServer())
@@ -109,6 +106,7 @@ describe("Integration tests", () => {
 				.set("x-auth", token)
 				.expect(200);
 
+			console.log(updateResponse);
 			expect(updateResponse.name).equal("test");
 			expect(updateResponse.email).equal("test-user+updated@panenco.com");
 			expect(updateResponse.password).undefined; // password excluded from response

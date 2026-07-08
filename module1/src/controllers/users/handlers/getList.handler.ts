@@ -25,5 +25,5 @@ export const getList = async (search?: string) => {
 		orderBy: { createdAt: "desc" },
 	});
 
-	return [users, users.length];
+	return users;
 };
