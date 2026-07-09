@@ -7,13 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Type {
+  FOOD
+  DRINK
+}
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  surname   String    @default("undefined")
+  email     String    @unique
   password  String
+  products  Product[] @relation("UserProducts")
+  recipes   Recipe[]  @relation("UserRecipes")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
+}
+
+// a User can have zero or more products, a product must always have a user
+// a Fridge can have zero or more products, a product must always have a fridge
+model Product {
+  id        String   @id @default(uuid())
+  
+  owner     User     @relation("UserProducts", fields: [ownerId], references: [id])
+  ownerId   String
+
+  fridge    Fridge   @relation("FridgeProducts", fields: [fridgeId], references: [id])
+  fridgeId  String
+
+  name      String
+  type      Type
+  size      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  @@map("products")
+}
+
+model Fridge {
+  id        String    @id @default(uuid())
+  location  String
+  capacity  Int
+  products  Product[] @relation("FridgeProducts")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("fridges")
+}
+
+model Ingredient {    
+  id        String    @id @default(uuid())
+  name      String
+  recipes   Recipe[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("ingredients")
+}
+
+model Recipe {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  ingredients Ingredient[]
+
+  owner     User     @relation("UserRecipes", fields: [ownerId], references: [id])
+  ownerId   String
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("recipes")
 }

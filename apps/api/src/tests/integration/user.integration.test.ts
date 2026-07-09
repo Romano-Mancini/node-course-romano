@@ -5,7 +5,6 @@ const request = require("supertest");
 
 import { AppModule } from "../../app.module";
 import { UserBody } from "../../contracts/user.body";
-import { User, UserStore } from "../../controllers/users/handlers/user.store";
 import { prisma } from "../../lib/prisma";
 
 describe("Integration tests", () => {
@@ -85,7 +84,7 @@ describe("Integration tests", () => {
 			expect(getListRes[0].name).equal("test");
 
 			expect(
-				getListRes.some((x: User) => x.email === createResponse.email),
+				getListRes.some((x: any) => x.email === createResponse.email),
 			).true;
 
 			// Try to access protected endpoint without token (should fail)

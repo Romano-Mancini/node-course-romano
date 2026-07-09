@@ -15,6 +15,12 @@ class UserBody {
 
 	@ApiProperty()
 	@Expose()
+	@IsString()
+	@IsOptional()
+	public surname: string;
+
+	@ApiProperty()
+	@Expose()
 	@IsEmail()
 	@IsOptional()
 	public email: string;
