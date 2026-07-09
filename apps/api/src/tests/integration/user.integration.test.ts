@@ -53,6 +53,7 @@ describe("Integration tests", () => {
 		});
 
 		it("should CRUD users with authentication", async () => {
+			console.log("getlist");
 			// Successfully create new user (public endpoint)
 			const { body: createResponse } = await request(app.getHttpServer())
 				.post(`/api/users`)

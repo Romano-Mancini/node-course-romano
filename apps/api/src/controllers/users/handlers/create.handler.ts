@@ -14,6 +14,8 @@ export const create = async (body: UserBody) => {
 			password: hashedPassword,
 		},
 	});
-
-	return plainToInstance(UserView, user, { excludeExtraneousValues: true });
+	const instance = plainToInstance(UserView, user, {
+		excludeExtraneousValues: true,
+	});
+	return instance;
 };
