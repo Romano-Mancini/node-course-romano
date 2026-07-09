@@ -95,6 +95,11 @@
             }
           }
         },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
         "summary": "Get user by id",
         "tags": [
           "users"
@@ -134,6 +139,11 @@
             }
           }
         },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
         "summary": "Update a user",
         "tags": [
           "users"
@@ -156,6 +166,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
         "summary": "Delete a user",
         "tags": [
           "users"

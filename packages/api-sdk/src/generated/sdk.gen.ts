@@ -42,17 +42,26 @@ export const createUser = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Delete a user
  */
-export const deleteUser = <ThrowOnError extends boolean = false>(options: Options<DeleteUserData, ThrowOnError>): RequestResult<DeleteUserResponses, unknown, ThrowOnError> => (options.client ?? client).delete<DeleteUserResponses, unknown, ThrowOnError>({ url: '/api/users/{id}', ...options });
+export const deleteUser = <ThrowOnError extends boolean = false>(options: Options<DeleteUserData, ThrowOnError>): RequestResult<DeleteUserResponses, unknown, ThrowOnError> => (options.client ?? client).delete<DeleteUserResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/users/{id}',
+    ...options
+});
 
 /**
  * Get user by id
  */
-export const retrieveUser = <ThrowOnError extends boolean = false>(options: Options<RetrieveUserData, ThrowOnError>): RequestResult<RetrieveUserResponses, unknown, ThrowOnError> => (options.client ?? client).get<RetrieveUserResponses, unknown, ThrowOnError>({ url: '/api/users/{id}', ...options });
+export const retrieveUser = <ThrowOnError extends boolean = false>(options: Options<RetrieveUserData, ThrowOnError>): RequestResult<RetrieveUserResponses, unknown, ThrowOnError> => (options.client ?? client).get<RetrieveUserResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/users/{id}',
+    ...options
+});
 
 /**
  * Update a user
  */
 export const updateUser = <ThrowOnError extends boolean = false>(options: Options<UpdateUserData, ThrowOnError>): RequestResult<UpdateUserResponses, unknown, ThrowOnError> => (options.client ?? client).patch<UpdateUserResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
     url: '/api/users/{id}',
     ...options,
     headers: {

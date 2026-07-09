@@ -51,6 +51,7 @@ describe("Handler tests", () => {
 
 		it("should get users", async () => {
 			const res = await getList(undefined);
+			console.log(res);
 			expect(res.some((x: any) => x.name === "test2")).true;
 		});
 

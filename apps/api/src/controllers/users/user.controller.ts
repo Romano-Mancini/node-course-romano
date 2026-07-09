@@ -67,6 +67,7 @@ export class UserController {
 	}
 
 	@Get(":id")
+	@ApiSecurity("x-auth")
 	@UseGuards(JwtAuthGuard)
 	@ApiOperation({ operationId: "retrieveUser", summary: "Get user by id" })
 	@ApiResponse({
@@ -84,6 +85,7 @@ export class UserController {
 		operationId: "updateUser",
 		summary: "Update a user",
 	})
+	@ApiSecurity("x-auth")
 	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
 		description: "User updated successfully",
@@ -96,6 +98,7 @@ export class UserController {
 		return update(id, body);
 	}
 
+	@ApiSecurity("x-auth")
 	@Delete(":id")
 	@ApiOperation({ operationId: "deleteUser", summary: "Delete a user" })
 	@UseGuards(JwtAuthGuard)
