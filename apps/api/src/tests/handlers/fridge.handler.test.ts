@@ -9,8 +9,10 @@ import { putProduct } from "../../controllers/fridge/handlers/putproduct.handler
 import { ProductType } from "../../contracts/product.body";
 import { randomUUID } from "node:crypto";
 import { giftProduct } from "../../controllers/fridge/handlers/gift.handler";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { deleteProduct } from "../../controllers/fridge/handlers/delete.handler";
+import { getProduct } from "../../controllers/fridge/handlers/get.handler";
+import { ProductView } from "../../contracts/product.view";
 
 const fridgeFixtures = [
 	{
@@ -384,6 +386,111 @@ describe("Fridge handlers", () => {
 
 			expect(deleted.name).equal("Bread");
 			expect(deleted.ownerId).equal(users[0].id);
+		});
+	});
+
+	describe("getProduct handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) => {
+					return prisma.user.create({
+						data: {
+							name: fixture.name,
+							email: fixture.email,
+							password: await bcrypt.hash(fixture.password, 10),
+						},
+					});
+				}),
+			);
+
+			fridges = await Promise.all(
+				fridgeFixtures.map((fixture) =>
+					prisma.fridge.create({
+						data: fixture,
+					}),
+				),
+			);
+		});
+
+		it("should return a user's own product", async () => {
+			const product = await prisma.product.create({
+				data: {
+					name: "Bread",
+					type: ProductType.FOOD,
+					size: 2,
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+				},
+			});
+
+			const res = await getProduct(users[0].id, product.id);
+
+			expect(res.id).equal(product.id);
+			expect(res.name).equal("Bread");
+			expect(res.ownerId).equal(users[0].id);
+		});
+
+		it("should throw when product does not exist", async () => {
+			try {
+				await getProduct(users[0].id, randomUUID());
+				expect.fail("Expected error");
+			} catch (err: any) {
+				expect(err).instanceOf(NotFoundException);
+				expect(err.message).equal("There is no product with this id.");
+			}
+		});
+
+		it("should throw when user is not the owner", async () => {
+			const product = await prisma.product.create({
+				data: {
+					name: "Milk",
+					type: ProductType.DRINK,
+					size: 1,
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+				},
+			});
+
+			try {
+				await getProduct(users[1].id, product.id);
+				expect.fail("Expected error");
+			} catch (err: any) {
+				expect(err).instanceOf(UnauthorizedException);
+				expect(err.message).equal("The product is not yours.");
+			}
+		});
+
+		it("should throw when trying to retrieve a deleted product", async () => {
+			const product = await prisma.product.create({
+				data: {
+					name: "Eggs",
+					type: ProductType.FOOD,
+					size: 6,
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+				},
+			});
+
+			await prisma.product.delete({
+				where: {
+					id: product.id,
+				},
+			});
+
+			try {
+				await getProduct(users[0].id, product.id);
+				expect.fail("Expected error");
+			} catch (err: any) {
+				expect(err).instanceOf(NotFoundException);
+				expect(err.message).equal("There is no product with this id.");
+			}
 		});
 	});
 });

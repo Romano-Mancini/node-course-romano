@@ -27,6 +27,7 @@ import { giftProduct } from "./handlers/gift.handler";
 import { ProductView } from "../../contracts/product.view";
 import { GiftBody } from "../../contracts/gift.body";
 import { deleteProduct } from "./handlers/delete.handler";
+import { getProduct } from "./handlers/get.handler";
 
 @ApiTags("fridges")
 @Controller("fridges")
@@ -94,7 +95,26 @@ export class FridgeController {
 		description: "Product deleted correctly",
 		type: ProductView,
 	})
-	async deleteProduct(@Body() body: GiftBody, @Req() req: any) {
+	async deleteProduct(
+		@Param("productId") productId: string,
+		@Body() body: GiftBody,
+		@Req() req: any,
+	) {
 		return deleteProduct(req.user.userId, body.productId);
+	}
+
+	@Get(":productId")
+	@ApiOperation({
+		operationId: "getProduct",
+		summary: "User gets one of their products",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Product correctly retrieved.",
+		type: ProductView,
+	})
+	async getProduct(@Req() req: any, @Param("productId") productId: string) {
+		return getProduct(req.user.userId, productId);
 	}
 }

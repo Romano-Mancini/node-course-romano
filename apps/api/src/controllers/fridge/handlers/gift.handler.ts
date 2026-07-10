@@ -1,5 +1,7 @@
 import { NotFoundException } from "@nestjs/common";
 import { prisma } from "../../../lib/prisma";
+import { plainToInstance } from "class-transformer";
+import { ProductView } from "../../../contracts/product.view";
 
 export const giftProduct = async (
 	userId: string,
@@ -21,12 +23,16 @@ export const giftProduct = async (
 		throw new NotFoundException("You are not the owner of the product.");
 	}
 
-	return await prisma.product.update({
+	const product = await prisma.product.update({
 		where: {
 			id: productId,
 		},
 		data: {
 			ownerId: receiverId,
 		},
+	});
+
+	return plainToInstance(ProductView, product, {
+		excludeExtraneousValues: true,
 	});
 };
