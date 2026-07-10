@@ -12,10 +12,14 @@ import { giftProduct } from "../../controllers/fridge/handlers/gift.handler";
 import { NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { deleteProduct } from "../../controllers/fridge/handlers/delete.handler";
 import { getProduct } from "../../controllers/fridge/handlers/get.handler";
-import { ProductView } from "../../contracts/product.view";
 import { getAllFridgeProducts } from "../../controllers/fridge/handlers/getallfridge.handler";
 import { giftAllFridgeProducts } from "../../controllers/fridge/handlers/giftallfridge.handler";
 import { deleteWholeFridge } from "../../controllers/fridge/handlers/deletewholefridge.handler";
+import { getAllProducts } from "../../controllers/fridge/handlers/getallproducts.handler";
+import { giftAllProducts } from "../../controllers/fridge/handlers/giftallproducts.handler";
+import { deleteAllProducts } from "../../controllers/fridge/handlers/deleteall.handler";
+import { getFromLocation } from "../../controllers/fridge/handlers/getfromlocation.handler";
+import { createRecipe } from "../../controllers/fridge/handlers/create.recipe.handler";
 
 const fridgeFixtures = [
 	{
@@ -56,6 +60,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -97,6 +102,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -205,6 +211,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -308,6 +315,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -409,6 +417,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -515,6 +524,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -634,6 +644,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -756,6 +767,7 @@ describe("Fridge handlers", () => {
 
 		beforeEach(async () => {
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
@@ -850,6 +862,490 @@ describe("Fridge handlers", () => {
 				expect(err).instanceOf(NotFoundException);
 				expect(err.message).equal("There is no fridge with that id.");
 			}
+		});
+	});
+
+	describe("getAllProducts handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) =>
+					prisma.user.create({
+						data: {
+							name: fixture.name,
+							surname: fixture.surname,
+							email: fixture.email,
+							password: await bcrypt.hash(fixture.password, 10),
+						},
+					}),
+				),
+			);
+
+			fridges = await Promise.all(
+				fridgeFixtures.map((fixture) =>
+					prisma.fridge.create({
+						data: fixture,
+					}),
+				),
+			);
+		});
+
+		it("should return all products owned by the user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			const res = await getAllProducts(users[0].id);
+
+			expect(res).to.have.length(2);
+			expect(res.every((p) => p.ownerId === users[0].id)).to.be.true;
+		});
+
+		it("should not return products owned by another user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Chocolate",
+						type: ProductType.FOOD,
+						size: 1,
+						ownerId: users[1].id,
+						fridgeId: fridges[0].id,
+					},
+				],
+			});
+
+			const res = await getAllProducts(users[0].id);
+
+			expect(res).to.have.length(1);
+			expect(res[0].name).equal("Bread");
+			expect(res[0].ownerId).equal(users[0].id);
+		});
+
+		it("should return an empty array when the user owns no products", async () => {
+			const res = await getAllProducts(users[0].id);
+
+			expect(res).to.have.length(0);
+		});
+	});
+
+	describe("giftAllProducts handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) =>
+					prisma.user.create({
+						data: {
+							name: fixture.name,
+							surname: fixture.surname,
+							email: fixture.email,
+							password: await bcrypt.hash(fixture.password, 10),
+						},
+					}),
+				),
+			);
+
+			fridges = await Promise.all(
+				fridgeFixtures.map((fixture) =>
+					prisma.fridge.create({
+						data: fixture,
+					}),
+				),
+			);
+		});
+
+		it("should transfer all products from the owner to the recipient", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			await giftAllProducts(users[0].id, users[1].id);
+
+			const senderProducts = await prisma.product.findMany({
+				where: { ownerId: users[0].id },
+			});
+			const recipientProducts = await prisma.product.findMany({
+				where: { ownerId: users[1].id },
+			});
+
+			expect(senderProducts).to.have.length(0);
+			expect(recipientProducts).to.have.length(2);
+		});
+
+		it("should not transfer products owned by another user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Chocolate",
+						type: ProductType.FOOD,
+						size: 1,
+						ownerId: users[2].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			await giftAllProducts(users[0].id, users[1].id);
+
+			const recipientProducts = await prisma.product.findMany({
+				where: { ownerId: users[1].id },
+			});
+			const otherUserProducts = await prisma.product.findMany({
+				where: { ownerId: users[2].id },
+			});
+
+			expect(recipientProducts).to.have.length(1);
+			expect(recipientProducts[0].name).to.equal("Bread");
+			expect(otherUserProducts).to.have.length(1);
+			expect(otherUserProducts[0].name).to.equal("Chocolate");
+		});
+
+		it("should do nothing when the owner has no products", async () => {
+			await giftAllProducts(users[0].id, users[1].id);
+
+			const senderProducts = await prisma.product.findMany({
+				where: { ownerId: users[0].id },
+			});
+			const recipientProducts = await prisma.product.findMany({
+				where: { ownerId: users[1].id },
+			});
+
+			expect(senderProducts).to.have.length(0);
+			expect(recipientProducts).to.have.length(0);
+		});
+	});
+
+	describe("deleteAllProducts handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) =>
+					prisma.user.create({
+						data: {
+							name: fixture.name,
+							surname: fixture.surname,
+							email: fixture.email,
+							password: await bcrypt.hash(fixture.password, 10),
+						},
+					}),
+				),
+			);
+
+			fridges = await Promise.all(
+				fridgeFixtures.map((fixture) =>
+					prisma.fridge.create({
+						data: fixture,
+					}),
+				),
+			);
+		});
+
+		it("should delete all products owned by the user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			await deleteAllProducts(users[0].id);
+
+			const products = await prisma.product.findMany({
+				where: { ownerId: users[0].id },
+			});
+
+			expect(products).to.have.length(0);
+		});
+
+		it("should not delete products owned by another user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Chocolate",
+						type: ProductType.FOOD,
+						size: 1,
+						ownerId: users[1].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			await deleteAllProducts(users[0].id);
+
+			const userProducts = await prisma.product.findMany({
+				where: { ownerId: users[0].id },
+			});
+			const otherUserProducts = await prisma.product.findMany({
+				where: { ownerId: users[1].id },
+			});
+
+			expect(userProducts).to.have.length(0);
+			expect(otherUserProducts).to.have.length(1);
+		});
+
+		it("should do nothing when the user has no products", async () => {
+			await deleteAllProducts(users[0].id);
+
+			const products = await prisma.product.findMany({
+				where: { ownerId: users[0].id },
+			});
+
+			expect(products).to.have.length(0);
+		});
+	});
+	describe("getFromLocation handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) =>
+					prisma.user.create({
+						data: {
+							name: fixture.name,
+							surname: fixture.surname,
+							email: fixture.email,
+							password: await bcrypt.hash(fixture.password, 10),
+						},
+					}),
+				),
+			);
+
+			fridges = await Promise.all(
+				fridgeFixtures.map((fixture) =>
+					prisma.fridge.create({
+						data: fixture,
+					}),
+				),
+			);
+		});
+
+		it("should return products from the given fridge location owned by the user", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+					{
+						name: "Bread",
+						type: ProductType.FOOD,
+						size: 2,
+						ownerId: users[0].id,
+						fridgeId: fridges[1].id,
+					},
+				],
+			});
+
+			const products = await getFromLocation(
+				fridges[0].location,
+				users[0].id,
+			);
+
+			expect(products).to.have.length(1);
+			expect(products[0].name).to.equal("Milk");
+		});
+
+		it("should not return products from another user's fridge", async () => {
+			await prisma.product.createMany({
+				data: [
+					{
+						name: "Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[1].id,
+						fridgeId: fridges[0].id,
+					},
+				],
+			});
+
+			const products = await getFromLocation(
+				fridges[0].location,
+				users[0].id,
+			);
+
+			expect(products).to.have.length(0);
+		});
+
+		it("should return an empty array when no products exist in the location", async () => {
+			await prisma.product.create({
+				data: {
+					name: "Eggs",
+					type: ProductType.FOOD,
+					size: 6,
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+				},
+			});
+
+			const products = await getFromLocation(
+				"Non Existing Location",
+				users[0].id,
+			);
+
+			expect(products).to.have.length(0);
+		});
+	});
+
+	describe("createRecipe handler", () => {
+		let users: any[];
+		let fridges: any[];
+
+		beforeEach(async () => {
+			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
+			await prisma.fridge.deleteMany();
+			await prisma.user.deleteMany();
+
+			users = await Promise.all(
+				userFixtures.map(async (fixture) => {
+					const hashedPassword = await bcrypt.hash(
+						fixture.password,
+						10,
+					);
+
+					return prisma.user.create({
+						data: {
+							name: fixture.name,
+							surname: fixture.surname,
+							email: fixture.email,
+							password: hashedPassword,
+						},
+					});
+				}),
+			);
+		});
+
+		it("should create a recipe", async () => {
+			const recipe = await createRecipe(
+				{
+					name: "Panzerotto",
+					description: "Authentic southern Italian recipe",
+					ingredients: ["Flour", "Olive oil", "Mozzarella", "Tomato"],
+				},
+				users[0].id,
+			);
+
+			expect(recipe.name).to.equal("Panzerotto");
+			expect(recipe.description).to.equal(
+				"Authentic southern Italian recipe",
+			);
+			expect(recipe.ingredients).to.deep.equal([
+				"Flour",
+				"Olive oil",
+				"Mozzarella",
+				"Tomato",
+			]);
+		});
+
+		it("should assign the recipe to the correct user", async () => {
+			const recipe = await createRecipe(
+				{
+					name: "Carbonara",
+					description: "Classic Roman pasta recipe",
+					ingredients: ["Pasta", "Eggs", "Pecorino", "Guanciale"],
+				},
+				users[0].id,
+			);
+
+			const savedRecipe = await prisma.recipe.findUnique({
+				where: {
+					id: recipe.id,
+				},
+			});
+
+			expect(savedRecipe?.ownerId).to.equal(users[0].id);
 		});
 	});
 });

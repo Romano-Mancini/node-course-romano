@@ -4,12 +4,12 @@ import { IsString, IsUUID } from "class-validator";
 
 Exclude();
 export class GiftBody {
-	@ApiProperty()
+	@ApiProperty({ format: "uuid" })
 	@IsUUID()
 	@Expose()
 	public productId: string;
 
-	@ApiProperty()
+	@ApiProperty({ format: "uuid" })
 	@IsString()
 	@Expose()
 	public receiverId: string;

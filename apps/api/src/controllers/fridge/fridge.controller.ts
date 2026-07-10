@@ -8,6 +8,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	Query,
 	Req,
 	UseGuards,
 } from "@nestjs/common";
@@ -32,11 +33,17 @@ import { getAllFridgeProducts } from "./handlers/getallfridge.handler";
 import { GiftFridgeBody } from "../../contracts/gift.fridge.body";
 import { giftAllFridgeProducts } from "./handlers/giftallfridge.handler";
 import { deleteWholeFridge } from "./handlers/deletewholefridge.handler";
+import { getAllProducts } from "./handlers/getallproducts.handler";
+import { giftAllProducts } from "./handlers/giftallproducts.handler";
+import { deleteAllProducts } from "./handlers/deleteall.handler";
+import { getFromLocation } from "./handlers/getfromlocation.handler";
+import { RecipeBody } from "../../contracts/recipeBody";
+import { createRecipe } from "./handlers/create.recipe.handler";
 
 @ApiTags("fridges")
-@Controller("fridges")
+@Controller()
 export class FridgeController {
-	@Post()
+	@Post("fridges")
 	@HttpCode(HttpStatus.CREATED)
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
@@ -53,13 +60,13 @@ export class FridgeController {
 		return create(body);
 	}
 
-	@Post(":fridgeId/products")
+	@Post("fridges/:fridgeId/products")
 	@HttpCode(HttpStatus.CREATED)
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "putProductFridge",
-		summary: "Put a user's product in a fridge",
+		summary: "Put a product in a fridge",
 	})
 	@ApiResponse({
 		status: 201,
@@ -73,63 +80,13 @@ export class FridgeController {
 		return putProduct(req.user.userId, fridgeId, body);
 	}
 
-	@Patch("gift")
-	@ApiOperation({
-		operationId: "giftProduct",
-		summary: "User gifts their product to another user",
-	})
-	@HttpCode(HttpStatus.OK)
-	@ApiSecurity("x-auth")
+	@Get("fridges/:fridgeId/products")
 	@UseGuards(JwtAuthGuard)
-	@ApiResponse({
-		description: "Product gifted correctly",
-		type: ProductView,
-	})
-	async giftProduct(@Body() body: GiftBody, @Req() req: any) {
-		return giftProduct(req.user.userId, body.productId, body.receiverId);
-	}
-
-	@Delete(":productId")
-	@ApiOperation({
-		operationId: "deleteProduct",
-		summary: "User deletes their product from a fridge",
-	})
 	@ApiSecurity("x-auth")
-	@UseGuards(JwtAuthGuard)
-	@HttpCode(HttpStatus.OK)
-	@ApiResponse({
-		description: "Product deleted correctly",
-		type: ProductView,
-	})
-	async deleteProduct(
-		@Param("productId") productId: string,
-		@Req() req: any,
-	) {
-		return deleteProduct(req.user.userId, productId);
-	}
-
-	@Get(":productId")
-	@ApiOperation({
-		operationId: "getProduct",
-		summary: "User gets one of their products",
-	})
-	@ApiSecurity("x-auth")
-	@UseGuards(JwtAuthGuard)
-	@ApiResponse({
-		description: "Product correctly retrieved.",
-		type: ProductView,
-	})
-	async getProduct(@Req() req: any, @Param("productId") productId: string) {
-		return getProduct(req.user.userId, productId);
-	}
-
-	@Get(":fridgeId")
 	@ApiOperation({
 		operationId: "getAllProductsFromFridge",
-		summary: "User gets all their products from a fridge",
+		summary: "Get all user's products from a fridge",
 	})
-	@ApiSecurity("x-auth")
-	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
 		description: "Products correctly retrieved.",
 		type: [ProductView],
@@ -141,32 +98,31 @@ export class FridgeController {
 		return getAllFridgeProducts(req.user.userId, fridgeId);
 	}
 
-	@Patch("giftAllFromFridge")
+	@Patch("fridges/:fridgeId/products/gift/:recipientId")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "giftAllProductsFridge",
-		summary: "User gifts all their products from a fridge",
+		summary: "Gift all products from a fridge",
 	})
-	@ApiSecurity("x-auth")
-	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
 		description: "Products correctly gifted.",
-		type: [ProductView],
 	})
-	async giftAllFridgeProducts(@Req() req: any, @Body() body: GiftFridgeBody) {
-		return giftAllFridgeProducts(
-			req.user.userId,
-			body.fridgeId,
-			body.receiverId,
-		);
+	async giftAllFridgeProducts(
+		@Req() req: any,
+		@Param("fridgeId") fridgeId: string,
+		@Param("recipientId") recipientId: string,
+	) {
+		return giftAllFridgeProducts(req.user.userId, fridgeId, recipientId);
 	}
 
-	@Delete(":fridgeId")
+	@Delete("fridges/:fridgeId/products")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "deleteWholeFridge",
-		summary: "User deletes all their products in a fridge",
+		summary: "Delete all user's products from a fridge",
 	})
-	@ApiSecurity("x-auth")
-	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
 		description: "Products correctly deleted.",
 	})
@@ -175,6 +131,141 @@ export class FridgeController {
 		@Req() req: any,
 		@Param("fridgeId") fridgeId: string,
 	) {
-		deleteWholeFridge(req.user.userId, fridgeId);
+		return deleteWholeFridge(req.user.userId, fridgeId);
+	}
+
+	@Get("products")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getAllProducts",
+		summary: "Get all user's products",
+	})
+	@ApiResponse({
+		description: "Products correctly retrieved.",
+		type: [ProductView],
+	})
+	async getAllProducts(@Req() req: any) {
+		return getAllProducts(req.user.userId);
+	}
+
+	@Get("products/:productId")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getProduct",
+		summary: "Get one of the user's products",
+	})
+	@ApiResponse({
+		description: "Product correctly retrieved.",
+		type: ProductView,
+	})
+	async getProduct(@Req() req: any, @Param("productId") productId: string) {
+		return getProduct(req.user.userId, productId);
+	}
+
+	@Patch("products/:productId/gift/:recipientId")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "giftProduct",
+		summary: "Gift a product to another user",
+	})
+	@ApiResponse({
+		description: "Product gifted correctly",
+		type: ProductView,
+	})
+	async giftProduct(
+		@Req() req: any,
+		@Param("productId") productId: string,
+		@Param("recipientId") recipientId: string,
+	) {
+		return giftProduct(req.user.userId, productId, recipientId);
+	}
+
+	@Delete("products/:productId")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "deleteProduct",
+		summary: "Delete a product",
+	})
+	@ApiResponse({
+		description: "Product deleted correctly",
+		type: ProductView,
+	})
+	@HttpCode(HttpStatus.OK)
+	async deleteProduct(
+		@Req() req: any,
+		@Param("productId") productId: string,
+	) {
+		return deleteProduct(req.user.userId, productId);
+	}
+
+	@Patch("products/gift/:recipientId")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "giftAllProducts",
+		summary: "Gift all products to another user",
+	})
+	@ApiResponse({
+		description: "Products correctly transferred.",
+	})
+	async giftAllProducts(
+		@Req() req: any,
+		@Param("recipientId") recipientId: string,
+	) {
+		return giftAllProducts(req.user.userId, recipientId);
+	}
+
+	@Delete("products")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "deleteAllProducts",
+		summary: "Delete all user's products",
+	})
+	@ApiResponse({
+		description: "Products correctly deleted.",
+	})
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async deleteAllProducts(@Req() req: any) {
+		return deleteAllProducts(req.user.userId);
+	}
+
+	@Get("products")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getAllProductsInLocation",
+		summary:
+			"Get all user's products from all fridges in a certain location",
+	})
+	@ApiResponse({
+		description: "Products correctly deleted.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async getFromLocation(
+		@Req() req: any,
+		@Query("location") location: string,
+	) {
+		return getFromLocation(req.user.userId, location);
+	}
+
+	@Post("recipes")
+	@HttpCode(HttpStatus.CREATED)
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "createRecipe",
+		summary: "User creates a recipe",
+	})
+	@ApiResponse({
+		description: "Recipe correctly created.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async createRecipe(@Req() req: any, @Body() body: RecipeBody) {
+		return createRecipe(body, req.user.userId);
 	}
 }

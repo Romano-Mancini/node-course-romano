@@ -32,6 +32,7 @@ describe("Handler tests", () => {
 		beforeEach(async () => {
 			// Clean up database
 			await prisma.product.deleteMany();
+			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 

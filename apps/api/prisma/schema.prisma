@@ -56,21 +56,12 @@ model Fridge {
   @@map("fridges")
 }
 
-model Ingredient {    
-  id        String    @id @default(uuid())
-  name      String
-  recipes   Recipe[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@map("ingredients")
-}
 
 model Recipe {
   id          String       @id @default(uuid())
   name        String
   description String
-  ingredients Ingredient[]
+  ingredients String[]
 
   owner     User     @relation("UserRecipes", fields: [ownerId], references: [id])
   ownerId   String
