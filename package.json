@@ -11,6 +11,7 @@
 		"typecheck": "turbo run typecheck"
 	},
 	"devDependencies": {
+		"@types/node": "^26.1.1",
 		"turbo": "^2.5.8"
 	}
 }

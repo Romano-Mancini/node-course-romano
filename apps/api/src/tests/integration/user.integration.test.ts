@@ -1,7 +1,7 @@
-const { Test } = require("@nestjs/testing");
-const { ValidationPipe } = require("@nestjs/common");
-const { expect } = require("chai");
-const request = require("supertest");
+import { Test } from "@nestjs/testing";
+import { ValidationPipe } from "@nestjs/common";
+import { expect } from "chai";
+import request from "supertest";
 
 import { AppModule } from "../../app.module";
 import { UserBody } from "../../contracts/user.body";
@@ -52,7 +52,6 @@ describe("Integration tests", () => {
 		});
 
 		it("should CRUD users with authentication", async () => {
-			console.log("getlist");
 			// Successfully create new user (public endpoint)
 			const { body: createResponse } = await request(app.getHttpServer())
 				.post(`/api/users`)
@@ -106,7 +105,6 @@ describe("Integration tests", () => {
 				.set("x-auth", token)
 				.expect(200);
 
-			console.log(updateResponse);
 			expect(updateResponse.name).equal("test");
 			expect(updateResponse.email).equal("test-user+updated@panenco.com");
 			expect(updateResponse.password).undefined; // password excluded from response

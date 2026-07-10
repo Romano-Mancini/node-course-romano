@@ -1,7 +1,7 @@
 import { prisma } from "../../../lib/prisma";
 import { plainToInstance } from "class-transformer";
 import { ProductBody } from "../../../contracts/product.body";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { ProductView } from "../../../contracts/product.view";
 
 export const putProduct = async (
@@ -9,6 +9,14 @@ export const putProduct = async (
 	fridgeId: string,
 	body: ProductBody,
 ) => {
+	const fridge = await prisma.fridge.findUnique({
+		where: { id: fridgeId },
+	});
+
+	if (!fridge) {
+		throw new NotFoundException("Fridge not found.");
+	}
+
 	const currentCapacity = await prisma.product.aggregate({
 		where: {
 			fridgeId: fridgeId,

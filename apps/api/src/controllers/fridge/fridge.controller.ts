@@ -5,6 +5,7 @@ import {
 	HttpCode,
 	HttpStatus,
 	Param,
+	Patch,
 	Post,
 	Req,
 	UseGuards,
@@ -42,7 +43,7 @@ export class FridgeController {
 		return create(body);
 	}
 
-	@Post(":id")
+	@Post(":fridgeId")
 	@HttpCode(HttpStatus.CREATED)
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
@@ -55,10 +56,23 @@ export class FridgeController {
 		description: "Product stored successfully",
 	})
 	async putProduct(
-		@Param("id") fridgeId: string,
+		@Param("fridgeId") fridgeId: string,
 		@Req() req: any,
 		@Body() body: ProductBody,
 	) {
 		return putProduct(req.user.userId, fridgeId, body);
 	}
+
+	// @Patch("gift/:productId")
+	// @ApiOperation({
+	// 	operationId: "giftProduct",
+	// 	summary: "User gifts her products to another user",
+	// })
+	// @ApiSecurity("x-auth")
+	// @UseGuards(JwtAuthGuard)
+	// @ApiResponse({
+	// 	description: "Product gifted correctly",
+	// 	type: ProductBody,
+	// })
+	// async;
 }

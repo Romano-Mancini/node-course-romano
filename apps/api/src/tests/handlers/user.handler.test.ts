@@ -13,11 +13,13 @@ import { prisma } from "../../lib/prisma";
 const userFixtures = [
 	{
 		name: "test1",
+		surname: "testsurname1",
 		email: "test-user+1@panenco.com",
 		password: "password1",
 	},
 	{
 		name: "test2",
+		surname: "testsurname2",
 		email: "test-user+2@panenco.com",
 		password: "password2",
 	},
@@ -29,6 +31,8 @@ describe("Handler tests", () => {
 
 		beforeEach(async () => {
 			// Clean up database
+			await prisma.product.deleteMany();
+			await prisma.fridge.deleteMany();
 			await prisma.user.deleteMany();
 
 			// Create test users
@@ -41,6 +45,7 @@ describe("Handler tests", () => {
 					return prisma.user.create({
 						data: {
 							name: fixture.name,
+							surname: fixture.surname,
 							email: fixture.email,
 							password: hashedPassword,
 						},
@@ -51,7 +56,6 @@ describe("Handler tests", () => {
 
 		it("should get users", async () => {
 			const res = await getList(undefined);
-			console.log(res);
 			expect(res.some((x: any) => x.name === "test2")).true;
 		});
 
@@ -76,6 +80,7 @@ describe("Handler tests", () => {
 			const body = {
 				email: "test-user+new@panenco.com",
 				name: "newUser",
+				surname: "newSurname",
 				password: "reallysecretstuff",
 			};
 			const res = await create(body);
