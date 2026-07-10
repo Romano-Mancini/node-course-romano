@@ -28,6 +28,10 @@ import { ProductView } from "../../contracts/product.view";
 import { GiftBody } from "../../contracts/gift.body";
 import { deleteProduct } from "./handlers/delete.handler";
 import { getProduct } from "./handlers/get.handler";
+import { getAllFridgeProducts } from "./handlers/getallfridge.handler";
+import { GiftFridgeBody } from "../../contracts/gift.fridge.body";
+import { giftAllFridgeProducts } from "./handlers/giftallfridge.handler";
+import { deleteWholeFridge } from "./handlers/deletewholefridge.handler";
 
 @ApiTags("fridges")
 @Controller("fridges")
@@ -49,7 +53,7 @@ export class FridgeController {
 		return create(body);
 	}
 
-	@Post(":fridgeId")
+	@Post(":fridgeId/products")
 	@HttpCode(HttpStatus.CREATED)
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
@@ -74,6 +78,7 @@ export class FridgeController {
 		operationId: "giftProduct",
 		summary: "User gifts their product to another user",
 	})
+	@HttpCode(HttpStatus.OK)
 	@ApiSecurity("x-auth")
 	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
@@ -91,16 +96,16 @@ export class FridgeController {
 	})
 	@ApiSecurity("x-auth")
 	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.OK)
 	@ApiResponse({
 		description: "Product deleted correctly",
 		type: ProductView,
 	})
 	async deleteProduct(
 		@Param("productId") productId: string,
-		@Body() body: GiftBody,
 		@Req() req: any,
 	) {
-		return deleteProduct(req.user.userId, body.productId);
+		return deleteProduct(req.user.userId, productId);
 	}
 
 	@Get(":productId")
@@ -116,5 +121,60 @@ export class FridgeController {
 	})
 	async getProduct(@Req() req: any, @Param("productId") productId: string) {
 		return getProduct(req.user.userId, productId);
+	}
+
+	@Get(":fridgeId")
+	@ApiOperation({
+		operationId: "getAllProductsFromFridge",
+		summary: "User gets all their products from a fridge",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Products correctly retrieved.",
+		type: [ProductView],
+	})
+	async getAllFridgeProducts(
+		@Req() req: any,
+		@Param("fridgeId") fridgeId: string,
+	) {
+		return getAllFridgeProducts(req.user.userId, fridgeId);
+	}
+
+	@Patch("giftAllFromFridge")
+	@ApiOperation({
+		operationId: "giftAllProductsFridge",
+		summary: "User gifts all their products from a fridge",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Products correctly gifted.",
+		type: [ProductView],
+	})
+	async giftAllFridgeProducts(@Req() req: any, @Body() body: GiftFridgeBody) {
+		return giftAllFridgeProducts(
+			req.user.userId,
+			body.fridgeId,
+			body.receiverId,
+		);
+	}
+
+	@Delete(":fridgeId")
+	@ApiOperation({
+		operationId: "deleteWholeFridge",
+		summary: "User deletes all their products in a fridge",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Products correctly deleted.",
+	})
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async deleteWholeFridge(
+		@Req() req: any,
+		@Param("fridgeId") fridgeId: string,
+	) {
+		deleteWholeFridge(req.user.userId, fridgeId);
 	}
 }

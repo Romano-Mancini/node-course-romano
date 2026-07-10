@@ -12,7 +12,7 @@ export class FridgeView {
 	@ApiProperty()
 	@Expose()
 	@IsString()
-	public email: string;
+	public location: string;
 
 	@ApiProperty()
 	@Expose()

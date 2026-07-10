@@ -3,11 +3,11 @@ import { Exclude, Expose } from "class-transformer";
 import { IsString, IsUUID } from "class-validator";
 
 Exclude();
-export class GiftBody {
+export class GiftFridgeBody {
 	@ApiProperty()
 	@IsUUID()
 	@Expose()
-	public productId: string;
+	public fridgeId: string;
 
 	@ApiProperty()
 	@IsString()
