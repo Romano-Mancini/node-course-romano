@@ -1,6 +1,7 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
 	HttpCode,
 	HttpStatus,
@@ -22,6 +23,10 @@ import { create } from "./handlers/create.handler";
 import { JwtAuthGuard } from "../../guards/jsw-auth.guard";
 import { putProduct } from "./handlers/putproduct.handler";
 import { ProductBody } from "../../contracts/product.body";
+import { giftProduct } from "./handlers/gift.handler";
+import { ProductView } from "../../contracts/product.view";
+import { GiftBody } from "../../contracts/gift.body";
+import { deleteProduct } from "./handlers/delete.handler";
 
 @ApiTags("fridges")
 @Controller("fridges")
@@ -63,16 +68,33 @@ export class FridgeController {
 		return putProduct(req.user.userId, fridgeId, body);
 	}
 
-	// @Patch("gift/:productId")
-	// @ApiOperation({
-	// 	operationId: "giftProduct",
-	// 	summary: "User gifts her products to another user",
-	// })
-	// @ApiSecurity("x-auth")
-	// @UseGuards(JwtAuthGuard)
-	// @ApiResponse({
-	// 	description: "Product gifted correctly",
-	// 	type: ProductBody,
-	// })
-	// async;
+	@Patch("gift")
+	@ApiOperation({
+		operationId: "giftProduct",
+		summary: "User gifts their product to another user",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Product gifted correctly",
+		type: ProductView,
+	})
+	async giftProduct(@Body() body: GiftBody, @Req() req: any) {
+		return giftProduct(req.user.userId, body.productId, body.receiverId);
+	}
+
+	@Delete(":productId")
+	@ApiOperation({
+		operationId: "deleteProduct",
+		summary: "User deletes their product from a fridge",
+	})
+	@ApiSecurity("x-auth")
+	@UseGuards(JwtAuthGuard)
+	@ApiResponse({
+		description: "Product deleted correctly",
+		type: ProductView,
+	})
+	async deleteProduct(@Body() body: GiftBody, @Req() req: any) {
+		return deleteProduct(req.user.userId, body.productId);
+	}
 }
