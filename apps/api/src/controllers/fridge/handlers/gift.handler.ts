@@ -6,7 +6,7 @@ import { ProductView } from "../../../contracts/product.view";
 export const giftProduct = async (
 	userId: string,
 	productId: string,
-	receiverId: string,
+	recipientEmail: string,
 ) => {
 	const res = await prisma.user.findUnique({ where: { id: userId } });
 	if (!res) {
@@ -23,16 +23,25 @@ export const giftProduct = async (
 		throw new NotFoundException("You are not the owner of the product.");
 	}
 
-	const product = await prisma.product.update({
+	const user = await prisma.user.findUnique({
 		where: {
-			id: productId,
-		},
-		data: {
-			ownerId: receiverId,
+			email: recipientEmail,
 		},
 	});
 
-	return plainToInstance(ProductView, product, {
-		excludeExtraneousValues: true,
+	if (!user) {
+		throw new NotFoundException("There is no user with that email.");
+	}
+
+	const product = await prisma.product.update({
+		where: {
+			id: productId,
+			ownerId: userId,
+		},
+		data: {
+			ownerId: user.id,
+		},
 	});
+
+	return product;
 };

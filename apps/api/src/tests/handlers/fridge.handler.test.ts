@@ -247,7 +247,11 @@ describe("Fridge handlers", () => {
 				},
 			});
 
-			const res = await giftProduct(users[0].id, product.id, users[1].id);
+			const res = await giftProduct(
+				users[0].id,
+				product.id,
+				users[1].email,
+			);
 
 			expect(res.ownerId).equal(users[1].id);
 		});
@@ -385,7 +389,7 @@ describe("Fridge handlers", () => {
 
 				expect.fail("Expected error");
 			} catch (err: any) {
-				expect(err).instanceOf(NotFoundException);
+				expect(err).instanceOf(UnauthorizedException);
 				expect(err.message).equal(
 					"You are not the owner of the product.",
 				);
@@ -692,7 +696,7 @@ describe("Fridge handlers", () => {
 			await giftAllFridgeProducts(
 				users[0].id,
 				fridges[0].id,
-				users[1].id,
+				users[1].email,
 			);
 
 			const products = await prisma.product.findMany({
@@ -727,7 +731,7 @@ describe("Fridge handlers", () => {
 			await giftAllFridgeProducts(
 				users[0].id,
 				fridges[0].id,
-				users[2].id,
+				users[2].email,
 			);
 
 			const products = await prisma.product.findMany({
@@ -750,7 +754,7 @@ describe("Fridge handlers", () => {
 				await giftAllFridgeProducts(
 					users[0].id,
 					randomUUID(),
-					users[1].id,
+					users[1].email,
 				);
 				expect.fail("Expected error");
 			} catch (err: any) {
@@ -1008,7 +1012,7 @@ describe("Fridge handlers", () => {
 				],
 			});
 
-			await giftAllProducts(users[0].id, users[1].id);
+			await giftAllProducts(users[0].id, users[1].email);
 
 			const senderProducts = await prisma.product.findMany({
 				where: { ownerId: users[0].id },
@@ -1041,7 +1045,7 @@ describe("Fridge handlers", () => {
 				],
 			});
 
-			await giftAllProducts(users[0].id, users[1].id);
+			await giftAllProducts(users[0].id, users[1].email);
 
 			const recipientProducts = await prisma.product.findMany({
 				where: { ownerId: users[1].id },
@@ -1057,7 +1061,7 @@ describe("Fridge handlers", () => {
 		});
 
 		it("should do nothing when the owner has no products", async () => {
-			await giftAllProducts(users[0].id, users[1].id);
+			await giftAllProducts(users[0].id, users[1].email);
 
 			const senderProducts = await prisma.product.findMany({
 				where: { ownerId: users[0].id },

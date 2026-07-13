@@ -1,4 +1,4 @@
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { prisma } from "../../../lib/prisma";
 import { plainToInstance } from "class-transformer";
 import { ProductView } from "../../../contracts/product.view";
@@ -12,7 +12,9 @@ export const deleteProduct = async (userId: string, productId: string) => {
 		throw new NotFoundException("Couldn't find the product.");
 	}
 	if (res.ownerId !== userId) {
-		throw new NotFoundException("You are not the owner of the product.");
+		throw new UnauthorizedException(
+			"You are not the owner of the product.",
+		);
 	}
 
 	const product = await prisma.product.delete({

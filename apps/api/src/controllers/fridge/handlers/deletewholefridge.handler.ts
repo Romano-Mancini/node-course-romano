@@ -10,7 +10,7 @@ export const deleteWholeFridge = async (userId: string, fridgeId: string) => {
 		throw new NotFoundException("There is no fridge with that id.");
 	}
 
-	return prisma.product.deleteMany({
+	return await prisma.product.deleteMany({
 		where: { fridgeId: fridgeId, ownerId: userId },
 	});
 };

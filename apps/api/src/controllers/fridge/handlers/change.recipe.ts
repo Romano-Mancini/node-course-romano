@@ -1,6 +1,4 @@
-import { plainToInstance } from "class-transformer";
 import { prisma } from "../../../lib/prisma";
-import { RecipeView } from "../../../contracts/recipeView";
 import { UpdateBody } from "../../../contracts/update.body";
 
 export const changeRecipe = async (
@@ -18,10 +16,8 @@ export const changeRecipe = async (
 		data.ingredients = body.ingredients;
 	}
 
-	const res = await prisma.recipe.updateMany({
+	return await prisma.recipe.updateMany({
 		where: { name: recipeName, ownerId: userId },
 		data: data,
 	});
-
-	return plainToInstance(RecipeView, res);
 };

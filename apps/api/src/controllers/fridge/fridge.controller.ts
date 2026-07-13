@@ -102,7 +102,7 @@ export class FridgeController {
 		return getAllFridgeProducts(req.user.userId, fridgeId);
 	}
 
-	@Patch("fridges/:fridgeId/products/gift/:recipientId")
+	@Patch("fridges/:fridgeId/products/gift/:receiverEmail")
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
 	@ApiOperation({
@@ -115,9 +115,9 @@ export class FridgeController {
 	async giftAllFridgeProducts(
 		@Req() req: any,
 		@Param("fridgeId") fridgeId: string,
-		@Param("recipientId") recipientId: string,
+		@Param("receiverEmail") receiverEmail: string,
 	) {
-		return giftAllFridgeProducts(req.user.userId, fridgeId, recipientId);
+		return giftAllFridgeProducts(req.user.userId, fridgeId, receiverEmail);
 	}
 
 	@Delete("fridges/:fridgeId/products")
@@ -168,7 +168,7 @@ export class FridgeController {
 		return getProduct(req.user.userId, productId);
 	}
 
-	@Patch("products/:productId/gift/:recipientId")
+	@Patch("products/:productId/gift/:recipientEmail")
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
 	@ApiOperation({
@@ -182,9 +182,9 @@ export class FridgeController {
 	async giftProduct(
 		@Req() req: any,
 		@Param("productId") productId: string,
-		@Param("recipientId") recipientId: string,
+		@Param("recipientEmail") recipientEmail: string,
 	) {
-		return giftProduct(req.user.userId, productId, recipientId);
+		return giftProduct(req.user.userId, productId, recipientEmail);
 	}
 
 	@Delete("products/:productId")
@@ -198,7 +198,7 @@ export class FridgeController {
 		description: "Product deleted correctly",
 		type: ProductView,
 	})
-	@HttpCode(HttpStatus.OK)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteProduct(
 		@Req() req: any,
 		@Param("productId") productId: string,
@@ -206,8 +206,9 @@ export class FridgeController {
 		return deleteProduct(req.user.userId, productId);
 	}
 
-	@Patch("products/gift/:recipientId")
+	@Patch("products/gift/:recipientEmail")
 	@UseGuards(JwtAuthGuard)
+	@HttpCode(HttpStatus.OK)
 	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "giftAllProducts",
@@ -218,9 +219,9 @@ export class FridgeController {
 	})
 	async giftAllProducts(
 		@Req() req: any,
-		@Param("recipientId") recipientId: string,
+		@Param("recipientEmail") recipientEmail: string,
 	) {
-		return giftAllProducts(req.user.userId, recipientId);
+		return giftAllProducts(req.user.userId, recipientEmail);
 	}
 
 	@Delete("products")
@@ -318,7 +319,7 @@ export class FridgeController {
 		summary: "User gets all their recipes",
 	})
 	@ApiResponse({
-		description: "Recipe correctly updated.",
+		description: "Recipes correctly fetched.",
 	})
 	@HttpCode(HttpStatus.OK)
 	async getAllRecipes(@Req() req: any) {
@@ -330,10 +331,10 @@ export class FridgeController {
 	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "getUserRecipes",
-		summary: "User gets all their recipes",
+		summary: "User gets a specific recipe",
 	})
 	@ApiResponse({
-		description: "Recipe correctly updated.",
+		description: "Recipe correctly fetched.",
 	})
 	@HttpCode(HttpStatus.OK)
 	async getRecipe(@Param("recipeName") recipeName: string, @Req() req: any) {

@@ -6,11 +6,18 @@ import { ProductView } from "../../../contracts/product.view";
 export const giftAllFridgeProducts = async (
 	userId: string,
 	fridgeId: string,
-	receiverId: string,
+	receiverEmail: string,
 ) => {
 	const res = await prisma.fridge.findUnique({ where: { id: fridgeId } });
 	if (!res) {
 		throw new NotFoundException("There is no fridge with this id.");
+	}
+
+	const user = await prisma.user.findUnique({
+		where: { email: receiverEmail },
+	});
+	if (!user) {
+		throw new NotFoundException("There is no user with this email.");
 	}
 
 	const fridge = await prisma.product.updateMany({
@@ -19,12 +26,9 @@ export const giftAllFridgeProducts = async (
 			ownerId: userId,
 		},
 		data: {
-			ownerId: receiverId,
+			ownerId: user.id,
 		},
 	});
 
-	const instance = plainToInstance(ProductView, fridge, {
-		excludeExtraneousValues: true,
-	});
-	return instance;
+	return fridge;
 };

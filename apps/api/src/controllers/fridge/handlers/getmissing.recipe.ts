@@ -4,7 +4,7 @@ import { NotFoundException } from "@nestjs/common";
 export const getMissingIngredients = async (
 	userId: string,
 	recipeName: string,
-) => {
+): Promise<string[]> => {
 	const recipe = await prisma.recipe.findFirst({
 		where: {
 			ownerId: userId,
