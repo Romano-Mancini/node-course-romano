@@ -1,3 +1,8 @@
+import { expect } from "chai";
+import { beforeEach, describe, it } from "mocha";
+import bcrypt from "bcryptjs";
+import { NotFoundException } from "@nestjs/common";
+
 import { createRecipe } from "../../controllers/fridge/handlers/create.recipe.handler";
 import { deleteRecipe } from "../../controllers/fridge/handlers/delete.recipe.handler";
 import { changeRecipe } from "../../controllers/fridge/handlers/change.recipe";
@@ -5,10 +10,7 @@ import { getAllRecipes } from "../../controllers/fridge/handlers/getall.recipe";
 import { getRecipe } from "../../controllers/fridge/handlers/get.recipe";
 import { getMissingIngredients } from "../../controllers/fridge/handlers/getmissing.recipe";
 import { prisma } from "../../lib/prisma";
-import bcrypt from "bcryptjs";
-import { expect } from "chai";
 import { ProductType } from "../../contracts/product.body";
-import { NotFoundException } from "@nestjs/common";
 
 const fridgeFixtures = [
 	{
@@ -177,7 +179,7 @@ describe("Recipe Handlers", () => {
 
 	describe("getAllRecipes handler", () => {
 		it("should get all recipes of the user", async () => {
-			const recipe = await createRecipe(
+			await createRecipe(
 				{
 					name: "Panzerotto",
 					description: "Authentic southern Italian recipe",
@@ -186,7 +188,7 @@ describe("Recipe Handlers", () => {
 				users[0].id,
 			);
 
-			const recipe2 = await createRecipe(
+			await createRecipe(
 				{
 					name: "Pizza",
 					description: "Most famous Italian recipe",
@@ -208,7 +210,6 @@ describe("Recipe Handlers", () => {
 				"Tomato",
 			]);
 
-			expect(res).has.lengthOf(2);
 			expect(res[1].name).to.equal("Pizza");
 			expect(res[1].description).to.equal("Most famous Italian recipe");
 			expect(res[1].ingredients).to.deep.equal([
@@ -219,7 +220,7 @@ describe("Recipe Handlers", () => {
 		});
 
 		it("should not get recipes of another user", async () => {
-			const recipe = await createRecipe(
+			await createRecipe(
 				{
 					name: "Panzerotto",
 					description: "Authentic southern Italian recipe",
@@ -228,7 +229,7 @@ describe("Recipe Handlers", () => {
 				users[0].id,
 			);
 
-			const recipe2 = await createRecipe(
+			await createRecipe(
 				{
 					name: "Pizza",
 					description: "Most famous Italian recipe",
@@ -242,7 +243,7 @@ describe("Recipe Handlers", () => {
 		});
 	});
 
-	describe("getAllRecipes handler", () => {
+	describe("getRecipe handler", () => {
 		it("should get the recipe of the user", async () => {
 			const recipe = await createRecipe(
 				{

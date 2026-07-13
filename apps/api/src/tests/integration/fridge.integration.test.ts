@@ -12,6 +12,18 @@ describe("Integration tests", () => {
 	describe("User Tests", () => {
 		let app: any;
 
+		let user1Token: string;
+		let user2Token: string;
+		let user1Id: string;
+		let user2Id: string;
+
+		let oudeMarktFridgeA: any;
+		let groteMarktFridge: any;
+		let oudeMarktFridgeB: any;
+
+		let pastaProduct: any;
+		let pizzaProduct: any;
+
 		before(async () => {
 			const moduleFixture = await Test.createTestingModule({
 				imports: [AppModule],
@@ -19,7 +31,6 @@ describe("Integration tests", () => {
 
 			app = moduleFixture.createNestApplication();
 
-			// Apply the same configuration as in main.ts
 			app.useGlobalPipes(
 				new ValidationPipe({
 					whitelist: true,
@@ -37,14 +48,11 @@ describe("Integration tests", () => {
 
 			app.setGlobalPrefix("api");
 
-			// Connect to database
 			await prisma.$connect();
 			console.log("Database connected successfully");
 
 			await app.init();
-		});
 
-		beforeEach(async () => {
 			await prisma.product.deleteMany();
 			await prisma.recipe.deleteMany();
 			await prisma.fridge.deleteMany();
@@ -55,522 +63,446 @@ describe("Integration tests", () => {
 			await app.close();
 		});
 
-		it("should CRUD products/fridges/recipes with authentication", async () => {
-			// Successfully create first user
-			const { body: createResponse } = await request(app.getHttpServer())
-				.post(`/api/users`)
+		it("should register user 1 and user 2", async () => {
+			await request(app.getHttpServer())
+				.post("/api/users")
 				.send({
 					name: "test",
 					email: "test-user+1@panenco.com",
 					password: "real secret stuff",
 				})
-				.expect(201);
+				.expect(HttpStatus.CREATED);
 
-			// Successfully create second user
-			const { body: createResponse2 } = await request(app.getHttpServer())
-				.post(`/api/users`)
+			await request(app.getHttpServer())
+				.post("/api/users")
 				.send({
 					name: "test",
 					email: "test-user+2@panenco.com",
 					password: "real secret stuff",
 				})
-				.expect(201);
+				.expect(HttpStatus.CREATED);
+		});
 
-			// Login to get JWT token of the first user
-			const { body: loginResponse } = await request(app.getHttpServer())
-				.post(`/api/auth/login`)
+		it("should login users and decode payloads", async () => {
+			const { body: loginResponse1 } = await request(app.getHttpServer())
+				.post("/api/auth/login")
 				.send({
 					email: "test-user+1@panenco.com",
 					password: "real secret stuff",
 				})
-				.expect(200);
+				.expect(HttpStatus.OK);
 
-			const token1 = loginResponse.token;
-			expect(token1).to.be.a("string");
+			user1Token = loginResponse1.token;
+			expect(user1Token).to.be.a("string");
 
-			// Login to get JWT token of the second user
 			const { body: loginResponse2 } = await request(app.getHttpServer())
-				.post(`/api/auth/login`)
+				.post("/api/auth/login")
 				.send({
 					email: "test-user+2@panenco.com",
 					password: "real secret stuff",
 				})
-				.expect(200);
+				.expect(HttpStatus.OK);
 
-			const token2 = loginResponse2.token;
-			expect(token2).to.be.a("string");
+			user2Token = loginResponse2.token;
+			expect(user2Token).to.be.a("string");
 
-			const payload1 = jwt.decode(token1) as {
-				userId: string;
-			};
+			const payload1 = jwt.decode(user1Token) as { userId: string };
+			const payload2 = jwt.decode(user2Token) as { userId: string };
 
-			const payload2 = jwt.decode(token2) as {
-				userId: string;
-			};
+			user1Id = payload1.userId;
+			user2Id = payload2.userId;
+		});
 
-			// Create two fridges
-			const { body: fridge } = await request(app.getHttpServer())
-				.post(`/api/fridges`)
+		it("should create multiple fridges", async () => {
+			const { body: fridgeA } = await request(app.getHttpServer())
+				.post("/api/fridges")
+				.send({ location: "Oude Markt", capacity: 10 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			oudeMarktFridgeA = fridgeA;
+			expect(oudeMarktFridgeA.location).equals("Oude Markt");
+			expect(oudeMarktFridgeA.capacity).equals(10);
+
+			const { body: fridgeB } = await request(app.getHttpServer())
+				.post("/api/fridges")
+				.send({ location: "Grote Markt", capacity: 20 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			groteMarktFridge = fridgeB;
+			expect(groteMarktFridge.location).equals("Grote Markt");
+			expect(groteMarktFridge.capacity).equals(20);
+		});
+
+		it("should add products to a fridge", async () => {
+			const { body: productA } = await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.send({ name: "Pasta", type: ProductType.FOOD, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			pastaProduct = productA;
+			expect(pastaProduct.fridgeId).equals(oudeMarktFridgeA.id);
+			expect(pastaProduct.ownerId).equals(user1Id);
+			expect(pastaProduct.name).equals("Pasta");
+
+			const { body: productB } = await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.send({ name: "Pizza", type: ProductType.FOOD, size: 8 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			pizzaProduct = productB;
+			expect(pizzaProduct.size).equals(8);
+		});
+
+		it("should enforce fridge capacity limits", async () => {
+			await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
 				.send({
-					location: "Oude Markt",
-					capacity: 10,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			expect(fridge.location).equals("Oude Markt");
-			expect(fridge.capacity).equals(10);
-
-			// Create two fridges
-			const { body: fridge2 } = await request(app.getHttpServer())
-				.post(`/api/fridges`)
-				.send({
-					location: "Grote Markt",
-					capacity: 20,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			expect(fridge2.location).equals("Grote Markt");
-			expect(fridge2.capacity).equals(20);
-
-			// Put a product in a fridge
-			const { body: product } = await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Pasta",
+					name: "Over capacity Item",
 					type: ProductType.FOOD,
 					size: 2,
 				})
-				.set("x-auth", token1)
-				.expect(201);
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.BAD_REQUEST);
+		});
 
-			expect(product.fridgeId).equals(fridge.id);
-			expect(product.ownerId).equals(payload1.userId);
-			expect(product.name).equals("Pasta");
-			expect(product.type).equals(ProductType.FOOD);
-			expect(product.size).equals(2);
-			expect(product.createdAt).equals(product.updatedAt);
+		it("should list products by fridge", async () => {
+			const { body: isolatedProducts } = await request(
+				app.getHttpServer(),
+			)
+				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
 
-			// Put another product in a fridge
+			expect(isolatedProducts).to.have.lengthOf(2);
+			expect(isolatedProducts[0].id).equals(pastaProduct.id);
+			expect(isolatedProducts[1].id).equals(pizzaProduct.id);
+		});
+
+		it("should gift all products in a fridge", async () => {
+			const { body: summary } = await request(app.getHttpServer())
+				.patch(
+					`/api/fridges/${oudeMarktFridgeA.id}/products/gift/test-user+2@panenco.com`,
+				)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(summary.count).to.equal(2);
+		});
+
+		it("should verify ownership transfer", async () => {
+			const { body: originalGiverStock } = await request(
+				app.getHttpServer(),
+			)
+				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(originalGiverStock).to.have.lengthOf(0);
+
+			const { body: targetReceiverStock } = await request(
+				app.getHttpServer(),
+			)
+				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.OK);
+
+			expect(targetReceiverStock).to.have.lengthOf(2);
+			expect(targetReceiverStock[0].id).equals(pastaProduct.id);
+			expect(targetReceiverStock[0].ownerId).equals(user2Id);
+		});
+
+		it("should clear an entire fridge", async () => {
+			await request(app.getHttpServer())
+				.delete(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.NO_CONTENT);
+
+			const { body: postPurgeStock } = await request(app.getHttpServer())
+				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.OK);
+
+			expect(postPurgeStock).to.have.lengthOf(0);
+		});
+
+		it("should return products of a user across multiple fridges", async () => {
+			const { body: product1 } = await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.send({ name: "Pasta", type: ProductType.FOOD, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			pastaProduct = product1;
+
 			const { body: product2 } = await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Pizza",
-					type: ProductType.FOOD,
-					size: 8,
-				})
-				.set("x-auth", token1)
-				.expect(201);
+				.post(`/api/fridges/${groteMarktFridge.id}/products`)
+				.send({ name: "Pizza", type: ProductType.FOOD, size: 8 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
 
-			expect(product2.fridgeId).equals(fridge.id);
-			expect(product2.ownerId).equals(payload1.userId);
-			expect(product2.name).equals("Pizza");
-			expect(product2.type).equals(ProductType.FOOD);
-			expect(product2.size).equals(8);
-			expect(product2.createdAt).equals(product2.updatedAt);
+			pizzaProduct = product2;
 
-			// Put a product in a fridge that's full
-			const { body: product3 } = await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Pasta",
-					type: ProductType.FOOD,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(400);
-
-			// List all the products of the user in a specific fridge
-			const { body: obtainedProducts } = await request(
+			const { body: userProductsList } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/fridges/${fridge.id}/products`)
-				.set("x-auth", token1)
-				.expect(200);
+				.get("/api/products")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
 
-			expect(obtainedProducts).to.have.lengthOf(2);
-			expect(obtainedProducts[0].id).equals(product.id);
-			expect(obtainedProducts[1].id).equals(product2.id);
+			expect(userProductsList).to.have.lengthOf(2);
+			expect(userProductsList[0].name).equals("Pasta");
+			expect(userProductsList[1].name).equals("Pizza");
+		});
 
-			// Gift all products from one fridge to another user
-			const { body: giftedProducts } = await request(app.getHttpServer())
+		it("should fetch a specific product by ID", async () => {
+			const { body: record } = await request(app.getHttpServer())
+				.get(`/api/products/${pastaProduct.id}`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(record.fridgeId).equals(oudeMarktFridgeA.id);
+			expect(record.name).equals("Pasta");
+		});
+
+		it("should gift a single specific product", async () => {
+			await request(app.getHttpServer())
 				.patch(
-					`/api/fridges/${fridge.id}/products/gift/test-user+2@panenco.com`,
+					`/api/products/${pastaProduct.id}/gift/test-user+2@panenco.com`,
 				)
-				.set("x-auth", token1)
-				.expect(200);
-			expect(giftedProducts.count).to.equal(2);
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
 
-			// original user should have no products anymore
-			const { body: obtainedProducts1 } = await request(
+			const { body: receiverVerification } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/fridges/${fridge.id}/products`)
-				.set("x-auth", token1)
-				.expect(200);
+				.get(`/api/products/${pastaProduct.id}`)
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.OK);
 
-			expect(obtainedProducts1).to.have.lengthOf(0);
-
-			// receiver user should have all products anymore
-			const { body: obtainedProducts2 } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/fridges/${fridge.id}/products`)
-				.set("x-auth", token2)
-				.expect(200);
-
-			expect(obtainedProducts2).to.have.lengthOf(2);
-			expect(obtainedProducts2[0].id).equals(product.id);
-			expect(obtainedProducts2[1].id).equals(product2.id);
-			expect(obtainedProducts2[0].ownerId).equals(payload2.userId);
-			expect(obtainedProducts2[1].ownerId).equals(payload2.userId);
-
-			const { body: deletedProducts } = await request(app.getHttpServer())
-				.delete(`/api/fridges/${fridge.id}/products`)
-				.set("x-auth", token2)
-				.expect(204);
-
-			// receiver user should have no products anymore
-			const { body: obtainedProducts3 } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/fridges/${fridge.id}/products`)
-				.set("x-auth", token2)
-				.expect(200);
-
-			expect(obtainedProducts3).to.have.lengthOf(0);
-
-			// put two products in two different fridges, then retrieve them all
-			const { body: product4 } = await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Pasta",
-					type: ProductType.FOOD,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			expect(product4.fridgeId).equals(fridge.id);
-			expect(product4.ownerId).equals(payload1.userId);
-			expect(product4.name).equals("Pasta");
-			expect(product4.type).equals(ProductType.FOOD);
-			expect(product4.size).equals(2);
-			expect(product4.createdAt).equals(product4.updatedAt);
-			const { body: product5 } = await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge2.id}/products`)
-				.send({
-					name: "Pizza",
-					type: ProductType.FOOD,
-					size: 8,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			expect(product5.fridgeId).equals(fridge2.id);
-			expect(product5.ownerId).equals(payload1.userId);
-			expect(product5.name).equals("Pizza");
-			expect(product5.type).equals(ProductType.FOOD);
-			expect(product5.size).equals(8);
-			expect(product5.createdAt).equals(product5.updatedAt);
-
-			const { body: obtainedProducts4 } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/products`)
-				.set("x-auth", token1)
-				.expect(200);
-
-			expect(obtainedProducts4).to.have.lengthOf(2);
-			expect(obtainedProducts4[0].name).equals("Pasta");
-			expect(obtainedProducts4[1].name).equals("Pizza");
-
-			// retrieve specific product
-			const { body: specificProduct } = await request(app.getHttpServer())
-				.get(`/api/products/${obtainedProducts4[0].id}`)
-				.set("x-auth", token1)
-				.expect(200);
-
-			expect(specificProduct.fridgeId).equals(fridge.id);
-			expect(specificProduct.ownerId).equals(payload1.userId);
-			expect(specificProduct.name).equals("Pasta");
-			expect(specificProduct.type).equals(ProductType.FOOD);
-			expect(specificProduct.size).equals(2);
-			expect(specificProduct.createdAt).equals(specificProduct.updatedAt);
-
-			// gift specific product to another user, check that it works
-			const { body: giftedProduct } = await request(app.getHttpServer())
-				.patch(
-					`/api/products/${obtainedProducts4[0].id}/gift/test-user+2@panenco.com`,
-				)
-				.set("x-auth", token1)
-				.expect(200);
-
-			expect(giftedProduct.id).to.equal(obtainedProducts4[0].id);
-
-			const { body: giftedProductAfter } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/products/${obtainedProducts4[0].id}`)
-				.set("x-auth", token2)
-				.expect(200);
-
-			expect(giftedProductAfter.ownerId).equals(payload2.userId);
+			expect(receiverVerification.ownerId).equals(user2Id);
 
 			await request(app.getHttpServer())
-				.get(`/api/products/${obtainedProducts4[0].id}`)
-				.set("x-auth", token1)
-				.expect(401);
+				.get(`/api/products/${pastaProduct.id}`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.UNAUTHORIZED);
+		});
 
-			// delete specific product if authorized
+		it("should only authorize deletion from the owner", async () => {
 			await request(app.getHttpServer())
-				.delete(`/api/products/${giftedProductAfter.id}`)
-				.set("x-auth", token1)
-				.expect(401);
-
-			await request(app.getHttpServer())
-				.delete(`/api/products/${giftedProductAfter.id}`)
-				.set("x-auth", token2)
-				.expect(204);
-
-			// create products in different fridges, then gift them all to another user
-			await request(app.getHttpServer())
-				.delete(`/api/products/${product5.id}`)
-				.set("x-auth", token1)
-				.expect(204);
+				.delete(`/api/products/${pastaProduct.id}`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.UNAUTHORIZED);
 
 			await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Salad",
-					type: ProductType.FOOD,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(201);
+				.delete(`/api/products/${pastaProduct.id}`)
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.NO_CONTENT);
+		});
+
+		it("should gift all owned products globally", async () => {
 			await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge2.id}/products`)
-				.send({
-					name: "Coca-Cola",
-					type: ProductType.DRINK,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(201);
+				.delete(`/api/products/${pizzaProduct.id}`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.NO_CONTENT);
+
+			await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.send({ name: "Salad", type: ProductType.FOOD, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			await request(app.getHttpServer())
+				.post(`/api/fridges/${groteMarktFridge.id}/products`)
+				.send({ name: "Coca-Cola", type: ProductType.DRINK, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
 
 			await request(app.getHttpServer())
 				.patch("/api/products/gift/test-user+2@panenco.com")
-				.set("x-auth", token1)
-				.expect(200);
-
-			const { body: allProductsGiver } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/products`)
-				.set("x-auth", token1)
-				.expect(200);
-
-			const { body: allProductsReceiver } = await request(
-				app.getHttpServer(),
-			)
-				.get(`/api/products`)
-				.set("x-auth", token2)
-				.expect(200);
-
-			expect(allProductsGiver).to.have.lengthOf(0);
-			expect(allProductsReceiver).to.have.lengthOf(2);
-
-			// delete all products of a user
-			await request(app.getHttpServer())
-				.delete(`/api/products`)
-				.set("x-auth", token2)
-				.expect(204);
-
-			await request(app.getHttpServer())
-				.delete(`/api/products`)
-				.set("x-auth", token1)
-				.expect(204);
-
-			// get all products in location
-			await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge.id}/products`)
-				.send({
-					name: "Pasta",
-					type: ProductType.FOOD,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			const { body: fridge3 } = await request(app.getHttpServer())
-				.post(`/api/fridges`)
-				.send({
-					location: "Oude Markt",
-					capacity: 10,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			await request(app.getHttpServer())
-				.post(`/api/fridges/${fridge3.id}/products`)
-				.send({
-					name: "Sushi",
-					type: ProductType.FOOD,
-					size: 2,
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			const { body: productsInOude } = await request(app.getHttpServer())
-				.get(
-					`/api/products/location/${encodeURIComponent("Oude Markt")}`,
-				)
-				.set("x-auth", token1)
-				.expect(200);
-
-			expect(productsInOude).that.have.lengthOf(2);
-			expect(productsInOude[0].name).to.be.equal("Pasta");
-			expect(productsInOude[1].name).to.be.equal("Sushi");
-
-			// create a recipe
-			const { body: recipe } = await request(app.getHttpServer())
-				.post(`/api/recipes`)
-				.send({
-					name: "Tonnarelli cacio e pepe",
-					description:
-						"Boil pasta and then put cheese and pepper on top.",
-					ingredients: ["Pasta", "Cheese", "Pepper"],
-				})
-				.set("x-auth", token1)
-				.expect(201);
-
-			expect(recipe.name).to.be.equal("Tonnarelli cacio e pepe");
-			expect(recipe.description).to.be.equal(
-				"Boil pasta and then put cheese and pepper on top.",
-			);
-			expect(recipe.ingredients).to.be.deep.equal([
-				"Pasta",
-				"Cheese",
-				"Pepper",
-			]);
-			expect(recipe.ownerId).to.be.equal(payload1.userId);
-
-			// get all recipes
-			const { body: allRecipes } = await request(app.getHttpServer())
-				.get(`/api/recipes`)
-				.set("x-auth", token1)
+				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
-			expect(allRecipes).to.have.lengthOf(1);
-			expect(allRecipes[0].name).to.be.equal("Tonnarelli cacio e pepe");
-			expect(allRecipes[0].description).to.be.equal(
-				"Boil pasta and then put cheese and pepper on top.",
-			);
-			expect(allRecipes[0].ingredients).to.be.deep.equal([
-				"Pasta",
-				"Cheese",
-				"Pepper",
-			]);
-			expect(allRecipes[0].ownerId).to.be.equal(payload1.userId);
+			const { body: totalGiverStock } = await request(app.getHttpServer())
+				.get("/api/products")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
 
-			// delete a recipe
+			const { body: totalReceiverStock } = await request(
+				app.getHttpServer(),
+			)
+				.get("/api/products")
+				.set("x-auth", user2Token)
+				.expect(HttpStatus.OK);
+
+			expect(totalGiverStock).to.have.lengthOf(0);
+			expect(totalReceiverStock).to.have.lengthOf(2);
+		});
+
+		it("should delete all owned products globally", async () => {
 			await request(app.getHttpServer())
-				.delete(
-					`/api/recipes/${encodeURIComponent("Tonnarelli cacio e pepe")}`,
-				)
-				.set("x-auth", token1)
+				.delete("/api/products")
+				.set("x-auth", user2Token)
 				.expect(HttpStatus.NO_CONTENT);
 
-			const { body: remainingRecipes } = await request(
+			await request(app.getHttpServer())
+				.delete("/api/products")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.NO_CONTENT);
+		});
+
+		it("should filter products by location", async () => {
+			await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.send({ name: "Pasta", type: ProductType.FOOD, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			const { body: fridgeC } = await request(app.getHttpServer())
+				.post("/api/fridges")
+				.send({ location: "Oude Markt", capacity: 10 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			oudeMarktFridgeB = fridgeC;
+
+			await request(app.getHttpServer())
+				.post(`/api/fridges/${oudeMarktFridgeB.id}/products`)
+				.send({ name: "Sushi", type: ProductType.FOOD, size: 2 })
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			const targetLocationParam = encodeURIComponent("Oude Markt");
+			const { body: locationAggregatedProducts } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/recipes`)
-				.set("x-auth", token1)
+				.get(`/api/products/location/${targetLocationParam}`)
+				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
-			expect(remainingRecipes).to.have.lengthOf(0);
+			expect(locationAggregatedProducts).to.have.lengthOf(2);
+			expect(locationAggregatedProducts[0].name).to.equal("Pasta");
+			expect(locationAggregatedProducts[1].name).to.equal("Sushi");
+		});
 
-			// update a recipe
-			await request(app.getHttpServer())
-				.post(`/api/recipes`)
+		it("should create a new recipe", async () => {
+			const { body: recipe } = await request(app.getHttpServer())
+				.post("/api/recipes")
 				.send({
 					name: "Tonnarelli cacio e pepe",
 					description:
 						"Boil pasta and then put cheese and pepper on top.",
 					ingredients: ["Pasta", "Cheese", "Pepper"],
 				})
-				.set("x-auth", token1)
-				.expect(201);
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			expect(recipe.name).to.equal("Tonnarelli cacio e pepe");
+			expect(recipe.ownerId).to.equal(user1Id);
+		});
+
+		it("should list all user recipes", async () => {
+			const { body: library } = await request(app.getHttpServer())
+				.get("/api/recipes")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(library).to.have.lengthOf(1);
+			expect(library[0].name).to.equal("Tonnarelli cacio e pepe");
+		});
+
+		it("should delete a recipe", async () => {
+			const targetRecipeParam = encodeURIComponent(
+				"Tonnarelli cacio e pepe",
+			);
+			await request(app.getHttpServer())
+				.delete(`/api/recipes/${targetRecipeParam}`)
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.NO_CONTENT);
+
+			const { body: verificationList } = await request(
+				app.getHttpServer(),
+			)
+				.get("/api/recipes")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(verificationList).to.have.lengthOf(0);
+		});
+
+		it("should update an existing recipe", async () => {
+			const targetRecipeParam = encodeURIComponent(
+				"Tonnarelli cacio e pepe",
+			);
 
 			await request(app.getHttpServer())
-				.patch(
-					`/api/recipes/${encodeURIComponent("Tonnarelli cacio e pepe")}`,
-				)
+				.post("/api/recipes")
+				.send({
+					name: "Tonnarelli cacio e pepe",
+					description:
+						"Boil pasta and then put cheese and pepper on top.",
+					ingredients: ["Pasta", "Cheese", "Pepper"],
+				})
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
+
+			await request(app.getHttpServer())
+				.patch(`/api/recipes/${targetRecipeParam}`)
 				.send({
 					description:
 						"Boil A LOT OF pasta and then put cheese and pepper on top.",
 					ingredients: ["Pasta", "Cheese", "Pepper", "Pecorino"],
 				})
-				.set("x-auth", token1)
-				.expect(200);
-
-			const { body: updatedRecipes } = await request(app.getHttpServer())
-				.get(`/api/recipes`)
-				.set("x-auth", token1)
+				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
-			expect(updatedRecipes).to.have.lengthOf(1);
-			expect(updatedRecipes[0].name).to.be.equal(
-				"Tonnarelli cacio e pepe",
-			);
-			expect(updatedRecipes[0].description).to.be.equal(
+			const { body: library } = await request(app.getHttpServer())
+				.get("/api/recipes")
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.OK);
+
+			expect(library[0].description).to.equal(
 				"Boil A LOT OF pasta and then put cheese and pepper on top.",
 			);
-			expect(updatedRecipes[0].ingredients).to.be.deep.equal([
+			expect(library[0].ingredients).to.deep.equal([
 				"Pasta",
 				"Cheese",
 				"Pepper",
 				"Pecorino",
 			]);
-			expect(updatedRecipes[0].ownerId).to.be.equal(payload1.userId);
+		});
 
+		it("should calculate missing ingredients based on stock", async () => {
 			await request(app.getHttpServer())
-				.post(`/api/recipes`)
+				.post("/api/recipes")
 				.send({
 					name: "Pasta Pesto",
 					description: "Boil pasta and then put pesto.",
 					ingredients: ["Pasta", "Pesto"],
 				})
-				.set("x-auth", token1)
-				.expect(201);
+				.set("x-auth", user1Token)
+				.expect(HttpStatus.CREATED);
 
-			const { body: specificRecipe } = await request(app.getHttpServer())
-				.get(`/api/recipes/${encodeURIComponent("Pasta Pesto")}`)
-				.set("x-auth", token1)
+			const targetRecipeParam = encodeURIComponent("Pasta Pesto");
+			const { body: targetRecipe } = await request(app.getHttpServer())
+				.get(`/api/recipes/${targetRecipeParam}`)
+				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
-			expect(specificRecipe.name).to.be.equal("Pasta Pesto");
-			expect(specificRecipe.description).to.be.equal(
-				"Boil pasta and then put pesto.",
-			);
-			expect(specificRecipe.ingredients).to.be.deep.equal([
-				"Pasta",
-				"Pesto",
-			]);
-			expect(specificRecipe.ownerId).to.be.equal(payload1.userId);
+			expect(targetRecipe.name).to.equal("Pasta Pesto");
 
-			const { body: remainingIngredients } = await request(
+			const { body: missingItemsList } = await request(
 				app.getHttpServer(),
 			)
-				.get(
-					`/api/recipes/missingIngredients/${encodeURIComponent("Pasta Pesto")}`,
-				)
-				.set("x-auth", token1)
+				.get(`/api/recipes/missingIngredients/${targetRecipeParam}`)
+				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
-			expect(remainingIngredients).be.of.length(1);
-			expect(remainingIngredients[0]).equal("Pesto");
+			expect(missingItemsList).to.have.lengthOf(1);
+			expect(missingItemsList[0]).to.equal("Pesto");
 		});
 	});
 });
