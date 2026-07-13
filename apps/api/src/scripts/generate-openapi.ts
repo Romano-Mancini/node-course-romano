@@ -1,4 +1,3 @@
-// src/scripts/generate-openapi.ts
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { NestFactory } from "@nestjs/core";

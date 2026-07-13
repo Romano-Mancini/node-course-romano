@@ -39,6 +39,13 @@ import { deleteAllProducts } from "./handlers/deleteall.handler";
 import { getFromLocation } from "./handlers/getfromlocation.handler";
 import { RecipeBody } from "../../contracts/recipeBody";
 import { createRecipe } from "./handlers/create.recipe.handler";
+import { deleteRecipe } from "./handlers/delete.recipe.handler";
+import { changeRecipe } from "./handlers/change.recipe";
+import { UpdateBody } from "../../contracts/update.body";
+import { get } from "node:http";
+import { getAllRecipes } from "./handlers/getall.recipe";
+import { getRecipe } from "./handlers/get.recipe";
+import { getMissingIngredients } from "./handlers/getmissing.recipe";
 
 @ApiTags("fridges")
 @Controller()
@@ -267,5 +274,90 @@ export class FridgeController {
 	@HttpCode(HttpStatus.OK)
 	async createRecipe(@Req() req: any, @Body() body: RecipeBody) {
 		return createRecipe(body, req.user.userId);
+	}
+
+	@Delete("recipes/:recipeName")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "deleteUserRecipe",
+		summary: "Delete a user's recipe",
+	})
+	@ApiResponse({
+		description: "Recipe correctly deleted.",
+	})
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async deleteRecipe(
+		@Req() req: any,
+		@Param("recipeName") recipeName: string,
+	) {
+		return deleteRecipe(recipeName, req.user.userId);
+	}
+
+	@Patch("recipes/:recipeName")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "updateUserRecipe",
+		summary: "Update a user's recipe",
+	})
+	@ApiResponse({
+		description: "Recipe correctly updated.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async changeRecipe(
+		@Req() req: any,
+		@Param("recipeName") recipeName: string,
+		@Body() body: UpdateBody,
+	) {
+		return changeRecipe(body, req.user.userId, recipeName);
+	}
+
+	@Get("recipes")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getUserRecipes",
+		summary: "User gets all their recipes",
+	})
+	@ApiResponse({
+		description: "Recipe correctly updated.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async getAllRecipes(@Req() req: any) {
+		return getAllRecipes(req.user.userId);
+	}
+
+	@Get("recipes/:recipeName")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getUserRecipes",
+		summary: "User gets all their recipes",
+	})
+	@ApiResponse({
+		description: "Recipe correctly updated.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async getRecipe(@Param("recipeName") recipeName: string, @Req() req: any) {
+		return getRecipe(req.user.userId, recipeName);
+	}
+
+	@Get("recipes/missingIngredients/:recipeName")
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getMissingIngredients",
+		summary: "User gets the ingredients it misses for one of its recipes",
+	})
+	@ApiResponse({
+		description: "Missing ingredients correctly fetched.",
+	})
+	@HttpCode(HttpStatus.OK)
+	async getMissingIngredients(
+		@Param("recipeName") recipeName: string,
+		@Req() req: any,
+	) {
+		return getMissingIngredients(req.user.userId, recipeName);
 	}
 }

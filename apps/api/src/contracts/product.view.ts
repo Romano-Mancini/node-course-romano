@@ -47,12 +47,12 @@ export class ProductView {
 	public size: number;
 
 	@ApiProperty({ format: "date-time" })
-	@Exclude()
+	@Expose()
 	@IsDate()
 	public createdAt: Date;
 
 	@ApiProperty({ format: "date-time" })
-	@Exclude()
+	@Expose()
 	@IsDate()
 	public updatedAt: Date;
 }

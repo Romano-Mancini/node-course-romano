@@ -1,26 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
-import { IsArray, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsArray, IsOptional, IsString } from "class-validator";
 
 @Exclude()
-export class RecipeView {
+export class UpdateBody {
 	@ApiProperty()
 	@Expose()
 	@IsString()
-	public name: string;
-
-	@ApiProperty()
-	@Expose()
-	@IsString()
+	@IsOptional()
 	public description: string;
 
 	@ApiProperty()
 	@Expose()
-	@IsUUID()
-	public ownerId: string;
-
-	@ApiProperty()
-	@Expose()
 	@IsArray()
+	@IsOptional()
 	public ingredients: string[];
 }

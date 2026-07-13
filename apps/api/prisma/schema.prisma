@@ -11,6 +11,7 @@ enum Type {
   FOOD
   DRINK
 }
+
 model User {
   id        String    @id @default(uuid())
   name      String
@@ -28,13 +29,13 @@ model User {
 // a User can have zero or more products, a product must always have a user
 // a Fridge can have zero or more products, a product must always have a fridge
 model Product {
-  id        String   @id @default(uuid())
-  
-  owner     User     @relation("UserProducts", fields: [ownerId], references: [id])
-  ownerId   String
+  id String @id @default(uuid())
 
-  fridge    Fridge   @relation("FridgeProducts", fields: [fridgeId], references: [id])
-  fridgeId  String
+  owner   User   @relation("UserProducts", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId String
+
+  fridge   Fridge @relation("FridgeProducts", fields: [fridgeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fridgeId String
 
   name      String
   type      Type
@@ -56,18 +57,17 @@ model Fridge {
   @@map("fridges")
 }
 
-
 model Recipe {
-  id          String       @id @default(uuid())
   name        String
   description String
   ingredients String[]
 
-  owner     User     @relation("UserRecipes", fields: [ownerId], references: [id])
-  ownerId   String
+  owner   User   @relation("UserRecipes", fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId String
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@unique([ownerId, name], name: "recipe_owner_name_unique")
   @@map("recipes")
 }

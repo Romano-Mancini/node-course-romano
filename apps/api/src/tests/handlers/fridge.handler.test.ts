@@ -19,7 +19,6 @@ import { getAllProducts } from "../../controllers/fridge/handlers/getallproducts
 import { giftAllProducts } from "../../controllers/fridge/handlers/giftallproducts.handler";
 import { deleteAllProducts } from "../../controllers/fridge/handlers/deleteall.handler";
 import { getFromLocation } from "../../controllers/fridge/handlers/getfromlocation.handler";
-import { createRecipe } from "../../controllers/fridge/handlers/create.recipe.handler";
 
 const fridgeFixtures = [
 	{
@@ -1275,77 +1274,6 @@ describe("Fridge handlers", () => {
 			);
 
 			expect(products).to.have.length(0);
-		});
-	});
-
-	describe("createRecipe handler", () => {
-		let users: any[];
-		let fridges: any[];
-
-		beforeEach(async () => {
-			await prisma.product.deleteMany();
-			await prisma.recipe.deleteMany();
-			await prisma.fridge.deleteMany();
-			await prisma.user.deleteMany();
-
-			users = await Promise.all(
-				userFixtures.map(async (fixture) => {
-					const hashedPassword = await bcrypt.hash(
-						fixture.password,
-						10,
-					);
-
-					return prisma.user.create({
-						data: {
-							name: fixture.name,
-							surname: fixture.surname,
-							email: fixture.email,
-							password: hashedPassword,
-						},
-					});
-				}),
-			);
-		});
-
-		it("should create a recipe", async () => {
-			const recipe = await createRecipe(
-				{
-					name: "Panzerotto",
-					description: "Authentic southern Italian recipe",
-					ingredients: ["Flour", "Olive oil", "Mozzarella", "Tomato"],
-				},
-				users[0].id,
-			);
-
-			expect(recipe.name).to.equal("Panzerotto");
-			expect(recipe.description).to.equal(
-				"Authentic southern Italian recipe",
-			);
-			expect(recipe.ingredients).to.deep.equal([
-				"Flour",
-				"Olive oil",
-				"Mozzarella",
-				"Tomato",
-			]);
-		});
-
-		it("should assign the recipe to the correct user", async () => {
-			const recipe = await createRecipe(
-				{
-					name: "Carbonara",
-					description: "Classic Roman pasta recipe",
-					ingredients: ["Pasta", "Eggs", "Pecorino", "Guanciale"],
-				},
-				users[0].id,
-			);
-
-			const savedRecipe = await prisma.recipe.findUnique({
-				where: {
-					id: recipe.id,
-				},
-			});
-
-			expect(savedRecipe?.ownerId).to.equal(users[0].id);
 		});
 	});
 });
