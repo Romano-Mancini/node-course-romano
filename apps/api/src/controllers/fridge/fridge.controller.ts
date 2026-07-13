@@ -149,6 +149,7 @@ export class FridgeController {
 		description: "Products correctly retrieved.",
 		type: [ProductView],
 	})
+	@HttpCode(HttpStatus.OK)
 	async getAllProducts(@Req() req: any) {
 		return getAllProducts(req.user.userId);
 	}
@@ -239,7 +240,7 @@ export class FridgeController {
 		return deleteAllProducts(req.user.userId);
 	}
 
-	@Get("products")
+	@Get("products/location/:location")
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
 	@ApiOperation({
@@ -253,7 +254,7 @@ export class FridgeController {
 	@HttpCode(HttpStatus.OK)
 	async getFromLocation(
 		@Req() req: any,
-		@Query("location") location: string,
+		@Param("location") location: string,
 	) {
 		return getFromLocation(req.user.userId, location);
 	}

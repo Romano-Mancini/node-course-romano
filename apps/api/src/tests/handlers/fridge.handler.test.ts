@@ -1232,8 +1232,8 @@ describe("Fridge handlers", () => {
 			});
 
 			const products = await getFromLocation(
-				fridges[0].location,
 				users[0].id,
+				fridges[0].location,
 			);
 
 			expect(products).to.have.length(1);

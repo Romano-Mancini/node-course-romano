@@ -424,7 +424,7 @@ describe("Integration tests", () => {
 
 			const { body: productsInOude } = await request(app.getHttpServer())
 				.get(
-					`/api/products/?location=${encodeURIComponent("Oude Markt")}`,
+					`/api/products/location/${encodeURIComponent("Oude Markt")}`,
 				)
 				.set("x-auth", token1)
 				.expect(200);

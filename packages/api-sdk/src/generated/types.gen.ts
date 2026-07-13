@@ -6,6 +6,7 @@ export type ClientOptions = {
 
 export type UserBody = {
     name: string;
+    surname: string;
     email: string;
     password: string;
 };
@@ -24,6 +25,45 @@ export type LoginBody = {
 export type AccessTokenView = {
     token: string;
     expiresIn: number;
+};
+
+export type FridgeBody = {
+    location: string;
+    capacity: number;
+};
+
+export type FridgeView = {
+    id: string;
+    location: string;
+    capacity: number;
+};
+
+export type ProductBody = {
+    name: string;
+    type: string;
+    size: number;
+};
+
+export type ProductView = {
+    id: string;
+    fridgeId: string;
+    ownerId: string;
+    name: string;
+    type: string;
+    size: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type RecipeBody = {
+    name: string;
+    description: string;
+    ingredients: Array<string>;
+};
+
+export type UpdateBody = {
+    description: string;
+    ingredients: Array<string>;
 };
 
 export type ListUsersData = {
@@ -126,3 +166,295 @@ export type LoginResponses = {
 };
 
 export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type CreateFridgeData = {
+    body: FridgeBody;
+    path?: never;
+    query?: never;
+    url: '/api/fridges';
+};
+
+export type CreateFridgeResponses = {
+    /**
+     * Fridge created successfully
+     */
+    201: FridgeView;
+};
+
+export type CreateFridgeResponse = CreateFridgeResponses[keyof CreateFridgeResponses];
+
+export type DeleteWholeFridgeData = {
+    body?: never;
+    path: {
+        fridgeId: string;
+    };
+    query?: never;
+    url: '/api/fridges/{fridgeId}/products';
+};
+
+export type DeleteWholeFridgeResponses = {
+    /**
+     * Products correctly deleted.
+     */
+    default: unknown;
+};
+
+export type GetAllProductsFromFridgeData = {
+    body?: never;
+    path: {
+        fridgeId: string;
+    };
+    query?: never;
+    url: '/api/fridges/{fridgeId}/products';
+};
+
+export type GetAllProductsFromFridgeResponses = {
+    /**
+     * Products correctly retrieved.
+     */
+    default: Array<ProductView>;
+};
+
+export type GetAllProductsFromFridgeResponse = GetAllProductsFromFridgeResponses[keyof GetAllProductsFromFridgeResponses];
+
+export type PutProductFridgeData = {
+    body: ProductBody;
+    path: {
+        fridgeId: string;
+    };
+    query?: never;
+    url: '/api/fridges/{fridgeId}/products';
+};
+
+export type PutProductFridgeResponses = {
+    /**
+     * Product stored successfully
+     */
+    201: unknown;
+};
+
+export type GiftAllProductsFridgeData = {
+    body?: never;
+    path: {
+        fridgeId: string;
+        receiverEmail: string;
+    };
+    query?: never;
+    url: '/api/fridges/{fridgeId}/products/gift/{receiverEmail}';
+};
+
+export type GiftAllProductsFridgeResponses = {
+    /**
+     * Products correctly gifted.
+     */
+    default: unknown;
+};
+
+export type DeleteAllProductsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/products';
+};
+
+export type DeleteAllProductsResponses = {
+    /**
+     * Products correctly deleted.
+     */
+    default: unknown;
+};
+
+export type GetAllProductsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/products';
+};
+
+export type GetAllProductsResponses = {
+    /**
+     * Products correctly retrieved.
+     */
+    default: Array<ProductView>;
+};
+
+export type GetAllProductsResponse = GetAllProductsResponses[keyof GetAllProductsResponses];
+
+export type DeleteProductData = {
+    body?: never;
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/products/{productId}';
+};
+
+export type DeleteProductResponses = {
+    /**
+     * Product deleted correctly
+     */
+    default: ProductView;
+};
+
+export type DeleteProductResponse = DeleteProductResponses[keyof DeleteProductResponses];
+
+export type GetProductData = {
+    body?: never;
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/products/{productId}';
+};
+
+export type GetProductResponses = {
+    /**
+     * Product correctly retrieved.
+     */
+    default: ProductView;
+};
+
+export type GetProductResponse = GetProductResponses[keyof GetProductResponses];
+
+export type GiftProductData = {
+    body?: never;
+    path: {
+        productId: string;
+        recipientEmail: string;
+    };
+    query?: never;
+    url: '/api/products/{productId}/gift/{recipientEmail}';
+};
+
+export type GiftProductResponses = {
+    /**
+     * Product gifted correctly
+     */
+    default: ProductView;
+};
+
+export type GiftProductResponse = GiftProductResponses[keyof GiftProductResponses];
+
+export type GiftAllProductsData = {
+    body?: never;
+    path: {
+        recipientEmail: string;
+    };
+    query?: never;
+    url: '/api/products/gift/{recipientEmail}';
+};
+
+export type GiftAllProductsResponses = {
+    /**
+     * Products correctly transferred.
+     */
+    default: unknown;
+};
+
+export type GetAllProductsInLocationData = {
+    body?: never;
+    path: {
+        location: string;
+    };
+    query?: never;
+    url: '/api/products/location/{location}';
+};
+
+export type GetAllProductsInLocationResponses = {
+    /**
+     * Products correctly deleted.
+     */
+    default: unknown;
+};
+
+export type GetUserRecipesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/recipes';
+};
+
+export type GetUserRecipesResponses = {
+    /**
+     * Recipes correctly fetched.
+     */
+    default: unknown;
+};
+
+export type CreateRecipeData = {
+    body: RecipeBody;
+    path?: never;
+    query?: never;
+    url: '/api/recipes';
+};
+
+export type CreateRecipeResponses = {
+    /**
+     * Recipe correctly created.
+     */
+    default: unknown;
+};
+
+export type DeleteUserRecipeData = {
+    body?: never;
+    path: {
+        recipeName: string;
+    };
+    query?: never;
+    url: '/api/recipes/{recipeName}';
+};
+
+export type DeleteUserRecipeResponses = {
+    /**
+     * Recipe correctly deleted.
+     */
+    default: unknown;
+};
+
+export type GetUserRecipes2Data = {
+    body?: never;
+    path: {
+        recipeName: string;
+    };
+    query?: never;
+    url: '/api/recipes/{recipeName}';
+};
+
+export type GetUserRecipes2Responses = {
+    /**
+     * Recipe correctly fetched.
+     */
+    default: unknown;
+};
+
+export type UpdateUserRecipeData = {
+    body: UpdateBody;
+    path: {
+        recipeName: string;
+    };
+    query?: never;
+    url: '/api/recipes/{recipeName}';
+};
+
+export type UpdateUserRecipeResponses = {
+    /**
+     * Recipe correctly updated.
+     */
+    default: unknown;
+};
+
+export type GetMissingIngredientsData = {
+    body?: never;
+    path: {
+        recipeName: string;
+    };
+    query?: never;
+    url: '/api/recipes/missingIngredients/{recipeName}';
+};
+
+export type GetMissingIngredientsResponses = {
+    /**
+     * Missing ingredients correctly fetched.
+     */
+    default: unknown;
+};

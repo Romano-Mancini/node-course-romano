@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateUserData, CreateUserResponses, DeleteUserData, DeleteUserResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, RetrieveUserData, RetrieveUserResponses, UpdateUserData, UpdateUserResponses } from './types.gen';
+import type { CreateFridgeData, CreateFridgeResponses, CreateRecipeData, CreateRecipeResponses, CreateUserData, CreateUserResponses, DeleteAllProductsData, DeleteAllProductsResponses, DeleteProductData, DeleteProductResponses, DeleteUserData, DeleteUserRecipeData, DeleteUserRecipeResponses, DeleteUserResponses, DeleteWholeFridgeData, DeleteWholeFridgeResponses, GetAllProductsData, GetAllProductsFromFridgeData, GetAllProductsFromFridgeResponses, GetAllProductsInLocationData, GetAllProductsInLocationResponses, GetAllProductsResponses, GetMissingIngredientsData, GetMissingIngredientsResponses, GetProductData, GetProductResponses, GetUserRecipes2Data, GetUserRecipes2Responses, GetUserRecipesData, GetUserRecipesResponses, GiftAllProductsData, GiftAllProductsFridgeData, GiftAllProductsFridgeResponses, GiftAllProductsResponses, GiftProductData, GiftProductResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, PutProductFridgeData, PutProductFridgeResponses, RetrieveUserData, RetrieveUserResponses, UpdateUserData, UpdateUserRecipeData, UpdateUserRecipeResponses, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -80,4 +80,182 @@ export const login = <ThrowOnError extends boolean = false>(options: Options<Log
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Create a new fridge
+ */
+export const createFridge = <ThrowOnError extends boolean = false>(options: Options<CreateFridgeData, ThrowOnError>): RequestResult<CreateFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).post<CreateFridgeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/fridges',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete all user's products from a fridge
+ */
+export const deleteWholeFridge = <ThrowOnError extends boolean = false>(options: Options<DeleteWholeFridgeData, ThrowOnError>): RequestResult<DeleteWholeFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).delete<DeleteWholeFridgeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/fridges/{fridgeId}/products',
+    ...options
+});
+
+/**
+ * Get all user's products from a fridge
+ */
+export const getAllProductsFromFridge = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsFromFridgeData, ThrowOnError>): RequestResult<GetAllProductsFromFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsFromFridgeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/fridges/{fridgeId}/products',
+    ...options
+});
+
+/**
+ * Put a product in a fridge
+ */
+export const putProductFridge = <ThrowOnError extends boolean = false>(options: Options<PutProductFridgeData, ThrowOnError>): RequestResult<PutProductFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).post<PutProductFridgeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/fridges/{fridgeId}/products',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Gift all products from a fridge
+ */
+export const giftAllProductsFridge = <ThrowOnError extends boolean = false>(options: Options<GiftAllProductsFridgeData, ThrowOnError>): RequestResult<GiftAllProductsFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).patch<GiftAllProductsFridgeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/fridges/{fridgeId}/products/gift/{receiverEmail}',
+    ...options
+});
+
+/**
+ * Delete all user's products
+ */
+export const deleteAllProducts = <ThrowOnError extends boolean = false>(options?: Options<DeleteAllProductsData, ThrowOnError>): RequestResult<DeleteAllProductsResponses, unknown, ThrowOnError> => (options?.client ?? client).delete<DeleteAllProductsResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products',
+    ...options
+});
+
+/**
+ * Get all user's products
+ */
+export const getAllProducts = <ThrowOnError extends boolean = false>(options?: Options<GetAllProductsData, ThrowOnError>): RequestResult<GetAllProductsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAllProductsResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products',
+    ...options
+});
+
+/**
+ * Delete a product
+ */
+export const deleteProduct = <ThrowOnError extends boolean = false>(options: Options<DeleteProductData, ThrowOnError>): RequestResult<DeleteProductResponses, unknown, ThrowOnError> => (options.client ?? client).delete<DeleteProductResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products/{productId}',
+    ...options
+});
+
+/**
+ * Get one of the user's products
+ */
+export const getProduct = <ThrowOnError extends boolean = false>(options: Options<GetProductData, ThrowOnError>): RequestResult<GetProductResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetProductResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products/{productId}',
+    ...options
+});
+
+/**
+ * Gift a product to another user
+ */
+export const giftProduct = <ThrowOnError extends boolean = false>(options: Options<GiftProductData, ThrowOnError>): RequestResult<GiftProductResponses, unknown, ThrowOnError> => (options.client ?? client).patch<GiftProductResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products/{productId}/gift/{recipientEmail}',
+    ...options
+});
+
+/**
+ * Gift all products to another user
+ */
+export const giftAllProducts = <ThrowOnError extends boolean = false>(options: Options<GiftAllProductsData, ThrowOnError>): RequestResult<GiftAllProductsResponses, unknown, ThrowOnError> => (options.client ?? client).patch<GiftAllProductsResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products/gift/{recipientEmail}',
+    ...options
+});
+
+/**
+ * Get all user's products from all fridges in a certain location
+ */
+export const getAllProductsInLocation = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsInLocationData, ThrowOnError>): RequestResult<GetAllProductsInLocationResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsInLocationResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/products/location/{location}',
+    ...options
+});
+
+/**
+ * User gets all their recipes
+ */
+export const getUserRecipes = <ThrowOnError extends boolean = false>(options?: Options<GetUserRecipesData, ThrowOnError>): RequestResult<GetUserRecipesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetUserRecipesResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes',
+    ...options
+});
+
+/**
+ * User creates a recipe
+ */
+export const createRecipe = <ThrowOnError extends boolean = false>(options: Options<CreateRecipeData, ThrowOnError>): RequestResult<CreateRecipeResponses, unknown, ThrowOnError> => (options.client ?? client).post<CreateRecipeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a user's recipe
+ */
+export const deleteUserRecipe = <ThrowOnError extends boolean = false>(options: Options<DeleteUserRecipeData, ThrowOnError>): RequestResult<DeleteUserRecipeResponses, unknown, ThrowOnError> => (options.client ?? client).delete<DeleteUserRecipeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes/{recipeName}',
+    ...options
+});
+
+/**
+ * User gets a specific recipe
+ */
+export const getUserRecipes2 = <ThrowOnError extends boolean = false>(options: Options<GetUserRecipes2Data, ThrowOnError>): RequestResult<GetUserRecipes2Responses, unknown, ThrowOnError> => (options.client ?? client).get<GetUserRecipes2Responses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes/{recipeName}',
+    ...options
+});
+
+/**
+ * Update a user's recipe
+ */
+export const updateUserRecipe = <ThrowOnError extends boolean = false>(options: Options<UpdateUserRecipeData, ThrowOnError>): RequestResult<UpdateUserRecipeResponses, unknown, ThrowOnError> => (options.client ?? client).patch<UpdateUserRecipeResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes/{recipeName}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * User gets the ingredients it misses for one of its recipes
+ */
+export const getMissingIngredients = <ThrowOnError extends boolean = false>(options: Options<GetMissingIngredientsData, ThrowOnError>): RequestResult<GetMissingIngredientsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetMissingIngredientsResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api/recipes/missingIngredients/{recipeName}',
+    ...options
 });

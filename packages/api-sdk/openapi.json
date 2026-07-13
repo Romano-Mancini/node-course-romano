@@ -208,6 +208,573 @@
           "Auth"
         ]
       }
+    },
+    "/api/fridges": {
+      "post": {
+        "operationId": "createFridge",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FridgeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Fridge created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FridgeView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Create a new fridge",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/fridges/{fridgeId}/products": {
+      "post": {
+        "operationId": "putProductFridge",
+        "parameters": [
+          {
+            "name": "fridgeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product stored successfully"
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Put a product in a fridge",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "get": {
+        "operationId": "getAllProductsFromFridge",
+        "parameters": [
+          {
+            "name": "fridgeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Products correctly retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Get all user's products from a fridge",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteWholeFridge",
+        "parameters": [
+          {
+            "name": "fridgeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Products correctly deleted."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Delete all user's products from a fridge",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/fridges/{fridgeId}/products/gift/{receiverEmail}": {
+      "patch": {
+        "operationId": "giftAllProductsFridge",
+        "parameters": [
+          {
+            "name": "fridgeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "receiverEmail",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Products correctly gifted."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Gift all products from a fridge",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/products": {
+      "get": {
+        "operationId": "getAllProducts",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Products correctly retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Get all user's products",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteAllProducts",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Products correctly deleted."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Delete all user's products",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/products/{productId}": {
+      "get": {
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Product correctly retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Get one of the user's products",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Product deleted correctly",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Delete a product",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/products/{productId}/gift/{recipientEmail}": {
+      "patch": {
+        "operationId": "giftProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recipientEmail",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Product gifted correctly",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Gift a product to another user",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/products/gift/{recipientEmail}": {
+      "patch": {
+        "operationId": "giftAllProducts",
+        "parameters": [
+          {
+            "name": "recipientEmail",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Products correctly transferred."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Gift all products to another user",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/products/location/{location}": {
+      "get": {
+        "operationId": "getAllProductsInLocation",
+        "parameters": [
+          {
+            "name": "location",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Products correctly deleted."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Get all user's products from all fridges in a certain location",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/recipes": {
+      "post": {
+        "operationId": "createRecipe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Recipe correctly created."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "User creates a recipe",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "get": {
+        "operationId": "getUserRecipes",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Recipes correctly fetched."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "User gets all their recipes",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/recipes/{recipeName}": {
+      "delete": {
+        "operationId": "deleteUserRecipe",
+        "parameters": [
+          {
+            "name": "recipeName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Recipe correctly deleted."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Delete a user's recipe",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "patch": {
+        "operationId": "updateUserRecipe",
+        "parameters": [
+          {
+            "name": "recipeName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Recipe correctly updated."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Update a user's recipe",
+        "tags": [
+          "fridges"
+        ]
+      },
+      "get": {
+        "operationId": "getUserRecipes",
+        "parameters": [
+          {
+            "name": "recipeName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Recipe correctly fetched."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "User gets a specific recipe",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/recipes/missingIngredients/{recipeName}": {
+      "get": {
+        "operationId": "getMissingIngredients",
+        "parameters": [
+          {
+            "name": "recipeName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Missing ingredients correctly fetched."
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "User gets the ingredients it misses for one of its recipes",
+        "tags": [
+          "fridges"
+        ]
+      }
     }
   },
   "info": {
@@ -233,6 +800,9 @@
           "name": {
             "type": "string"
           },
+          "surname": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
@@ -242,6 +812,7 @@
         },
         "required": [
           "name",
+          "surname",
           "email",
           "password"
         ]
@@ -294,6 +865,144 @@
         "required": [
           "token",
           "expiresIn"
+        ]
+      },
+      "FridgeBody": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "location",
+          "capacity"
+        ]
+      },
+      "FridgeView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "location": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "location",
+          "capacity"
+        ]
+      },
+      "ProductBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "size"
+        ]
+      },
+      "ProductView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fridgeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fridgeId",
+          "ownerId",
+          "name",
+          "type",
+          "size",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "RecipeBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "ingredients"
+        ]
+      },
+      "UpdateBody": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "description",
+          "ingredients"
         ]
       }
     }

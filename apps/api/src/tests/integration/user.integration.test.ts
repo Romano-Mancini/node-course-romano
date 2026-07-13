@@ -51,7 +51,7 @@ describe("Integration tests", () => {
 			await app.close();
 		});
 
-		it("should CRUD users with authentication", async () => {
+		describe("should CRUD users with authentication", async () => {
 			// Successfully create new user (public endpoint)
 			const { body: createResponse } = await request(app.getHttpServer())
 				.post(`/api/users`)
