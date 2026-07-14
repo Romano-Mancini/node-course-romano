@@ -57,12 +57,18 @@ export default function LoginPage() {
 						<Label htmlFor="email">Email</Label>
 						<Input id="email" type="email" {...register("email")} />
 						{errors.email && (
-							<p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+							<p className="mt-1 text-sm text-red-600">
+								{errors.email.message}
+							</p>
 						)}
 					</div>
 					<div>
 						<Label htmlFor="password">Password</Label>
-						<Input id="password" type="password" {...register("password")} />
+						<Input
+							id="password"
+							type="password"
+							{...register("password")}
+						/>
 						{errors.password && (
 							<p className="mt-1 text-sm text-red-600">
 								{errors.password.message}
@@ -74,7 +80,11 @@ export default function LoginPage() {
 							{loginErrorMessage(loginMutation.error)}
 						</p>
 					)}
-					<Button type="submit" className="w-full" disabled={isSubmitting}>
+					<Button
+						type="submit"
+						className="w-full"
+						disabled={isSubmitting}
+					>
 						{isSubmitting ? "Signing in…" : "Sign in"}
 					</Button>
 				</form>

@@ -171,14 +171,14 @@ export type GetAllFridgesData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api';
+    url: '/api/fridges';
 };
 
 export type GetAllFridgesResponses = {
     /**
      * Fridges returned successfully
      */
-    201: Array<FridgeView>;
+    200: Array<FridgeView>;
 };
 
 export type GetAllFridgesResponse = GetAllFridgesResponses[keyof GetAllFridgesResponses];
@@ -198,6 +198,24 @@ export type CreateFridgeResponses = {
 };
 
 export type CreateFridgeResponse = CreateFridgeResponses[keyof CreateFridgeResponses];
+
+export type ReturnFridgeData = {
+    body?: never;
+    path: {
+        fridgeId: string;
+    };
+    query?: never;
+    url: '/api/fridge/{fridgeId}';
+};
+
+export type ReturnFridgeResponses = {
+    /**
+     * Fridge returned successfully
+     */
+    200: FridgeView;
+};
+
+export type ReturnFridgeResponse = ReturnFridgeResponses[keyof ReturnFridgeResponses];
 
 export type DeleteWholeFridgeData = {
     body?: never;

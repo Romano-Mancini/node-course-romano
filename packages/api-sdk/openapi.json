@@ -209,12 +209,12 @@
         ]
       }
     },
-    "/api": {
+    "/api/fridges": {
       "get": {
         "operationId": "getAllFridges",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "Fridges returned successfully",
             "content": {
               "application/json": {
@@ -237,9 +237,7 @@
         "tags": [
           "fridges"
         ]
-      }
-    },
-    "/api/fridges": {
+      },
       "post": {
         "operationId": "createFridge",
         "parameters": [],
@@ -271,6 +269,42 @@
           }
         ],
         "summary": "Create a new fridge",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
+    "/api/fridge/{fridgeId}": {
+      "get": {
+        "operationId": "returnFridge",
+        "parameters": [
+          {
+            "name": "fridgeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fridge returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FridgeView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Returns fridge by Id",
         "tags": [
           "fridges"
         ]

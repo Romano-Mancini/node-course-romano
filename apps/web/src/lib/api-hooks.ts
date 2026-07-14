@@ -29,6 +29,7 @@ import {
 	ProductView,
 	putProductFridge,
 	RecipeBody,
+	returnFridge,
 	UpdateBody,
 	updateUser,
 	updateUserRecipe,
@@ -414,6 +415,19 @@ export function useAllFridges() {
 		queryKey: [...FRIDGE_KEY],
 		queryFn: async () => {
 			const { data, error } = await getAllFridges({});
+
+			if (error) throw error;
+
+			return (data ?? []) as FridgeView[];
+		},
+	});
+}
+
+export function useGetFridge(fridgeId: string) {
+	return useQuery<FridgeView[]>({
+		queryKey: [...FRIDGE_KEY, fridgeId],
+		queryFn: async () => {
+			const { data, error } = await returnFridge({ path: { fridgeId } });
 
 			if (error) throw error;
 
