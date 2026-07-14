@@ -14,8 +14,6 @@ import {
 	FridgeView,
 	getAllFridges,
 	getAllProducts,
-	getAllProductsFromFridge,
-	getAllProductsInLocation,
 	getMissingIngredients,
 	getProduct,
 	getUserRecipes,
@@ -38,6 +36,7 @@ import {
 
 const USERS_KEY = ["users"];
 const FRIDGE_KEY = ["fridges"];
+const PRODUCT_KEY = ["product"];
 const RECIPE_KEY = ["recipes"];
 
 // Every hook calls a typed SDK function, checks the `{ data, error }` result,
@@ -114,22 +113,6 @@ export function useCreateFridge() {
 	});
 }
 
-export function useFridgeProducts(fridgeId: string) {
-	return useQuery({
-		queryKey: [...FRIDGE_KEY, fridgeId],
-		queryFn: async () => {
-			const { data, error } = await getAllProductsFromFridge({
-				path: {
-					fridgeId,
-				},
-			});
-
-			if (error) throw error;
-			return data!;
-		},
-	});
-}
-
 export function useAddProductToFridge() {
 	const queryClient = useQueryClient();
 
@@ -194,25 +177,15 @@ export function useGiftAllProductsFromFridge() {
 	});
 }
 
-export function useGetProducts() {
+export function useAllProducts(location: string, fridgeID: string) {
 	return useQuery<ProductView[]>({
-		queryKey: [...FRIDGE_KEY],
+		queryKey: [...FRIDGE_KEY, location, fridgeID],
 		queryFn: async () => {
-			const { data, error } = await getAllProducts({});
-
-			if (error) throw error;
-
-			return (data ?? []) as ProductView[];
-		},
-	});
-}
-
-export function useProductsByLocation(location: string) {
-	return useQuery<ProductView[]>({
-		queryKey: [...FRIDGE_KEY, location],
-		queryFn: async () => {
-			const { data, error } = await getAllProductsInLocation({
-				path: { location },
+			const { data, error } = await getAllProducts({
+				query: {
+					location,
+					fridgeID,
+				},
 			});
 
 			if (error) throw error;

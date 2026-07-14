@@ -71,6 +71,38 @@ async function main() {
 				ownerId: jane.id,
 				fridgeId: fridge2.id,
 			},
+
+			// John in fridge2
+			{
+				name: "Apples",
+				type: Type.FOOD,
+				size: 6,
+				ownerId: john.id,
+				fridgeId: fridge2.id,
+			},
+			{
+				name: "Water",
+				type: Type.DRINK,
+				size: 2,
+				ownerId: john.id,
+				fridgeId: fridge2.id,
+			},
+
+			// Jane in fridge1
+			{
+				name: "Bread",
+				type: Type.FOOD,
+				size: 1,
+				ownerId: jane.id,
+				fridgeId: fridge1.id,
+			},
+			{
+				name: "Soda",
+				type: Type.DRINK,
+				size: 1,
+				ownerId: jane.id,
+				fridgeId: fridge1.id,
+			},
 		],
 	});
 
@@ -90,8 +122,6 @@ async function main() {
 			},
 		],
 	});
-
-	console.log(john);
 }
 
 main()

@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateFridgeData, CreateFridgeResponses, CreateRecipeData, CreateRecipeResponses, CreateUserData, CreateUserResponses, DeleteAllProductsData, DeleteAllProductsResponses, DeleteProductData, DeleteProductResponses, DeleteUserData, DeleteUserRecipeData, DeleteUserRecipeResponses, DeleteUserResponses, DeleteWholeFridgeData, DeleteWholeFridgeResponses, GetAllFridgesData, GetAllFridgesResponses, GetAllProductsData, GetAllProductsFromFridgeData, GetAllProductsFromFridgeResponses, GetAllProductsInLocationData, GetAllProductsInLocationResponses, GetAllProductsResponses, GetMissingIngredientsData, GetMissingIngredientsResponses, GetProductData, GetProductResponses, GetUserRecipes2Data, GetUserRecipes2Responses, GetUserRecipesData, GetUserRecipesResponses, GiftAllProductsData, GiftAllProductsFridgeData, GiftAllProductsFridgeResponses, GiftAllProductsResponses, GiftProductData, GiftProductResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, PutProductFridgeData, PutProductFridgeResponses, RetrieveUserData, RetrieveUserResponses, ReturnFridgeData, ReturnFridgeResponses, UpdateUserData, UpdateUserRecipeData, UpdateUserRecipeResponses, UpdateUserResponses } from './types.gen';
+import type { CreateFridgeData, CreateFridgeResponses, CreateRecipeData, CreateRecipeResponses, CreateUserData, CreateUserResponses, DeleteAllProductsData, DeleteAllProductsResponses, DeleteProductData, DeleteProductResponses, DeleteUserData, DeleteUserRecipeData, DeleteUserRecipeResponses, DeleteUserResponses, DeleteWholeFridgeData, DeleteWholeFridgeResponses, GetAllFridgesData, GetAllFridgesResponses, GetAllProductsData, GetAllProductsResponses, GetMissingIngredientsData, GetMissingIngredientsResponses, GetProductData, GetProductResponses, GetUserRecipes2Data, GetUserRecipes2Responses, GetUserRecipesData, GetUserRecipesResponses, GiftAllProductsData, GiftAllProductsFridgeData, GiftAllProductsFridgeResponses, GiftAllProductsResponses, GiftProductData, GiftProductResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, PutProductFridgeData, PutProductFridgeResponses, RetrieveUserData, RetrieveUserResponses, ReturnFridgeData, ReturnFridgeResponses, UpdateUserData, UpdateUserRecipeData, UpdateUserRecipeResponses, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -123,15 +123,6 @@ export const deleteWholeFridge = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
- * Get all user's products from a fridge
- */
-export const getAllProductsFromFridge = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsFromFridgeData, ThrowOnError>): RequestResult<GetAllProductsFromFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsFromFridgeResponses, unknown, ThrowOnError>({
-    security: [{ name: 'x-auth', type: 'apiKey' }],
-    url: '/api/fridges/{fridgeId}/products',
-    ...options
-});
-
-/**
  * Put a product in a fridge
  */
 export const putProductFridge = <ThrowOnError extends boolean = false>(options: Options<PutProductFridgeData, ThrowOnError>): RequestResult<PutProductFridgeResponses, unknown, ThrowOnError> => (options.client ?? client).post<PutProductFridgeResponses, unknown, ThrowOnError>({
@@ -163,9 +154,9 @@ export const deleteAllProducts = <ThrowOnError extends boolean = false>(options?
 });
 
 /**
- * Get all user's products
+ * Get all user's products, filtering if params are provided
  */
-export const getAllProducts = <ThrowOnError extends boolean = false>(options?: Options<GetAllProductsData, ThrowOnError>): RequestResult<GetAllProductsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAllProductsResponses, unknown, ThrowOnError>({
+export const getAllProducts = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsData, ThrowOnError>): RequestResult<GetAllProductsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsResponses, unknown, ThrowOnError>({
     security: [{ name: 'x-auth', type: 'apiKey' }],
     url: '/api/products',
     ...options
@@ -204,15 +195,6 @@ export const giftProduct = <ThrowOnError extends boolean = false>(options: Optio
 export const giftAllProducts = <ThrowOnError extends boolean = false>(options: Options<GiftAllProductsData, ThrowOnError>): RequestResult<GiftAllProductsResponses, unknown, ThrowOnError> => (options.client ?? client).patch<GiftAllProductsResponses, unknown, ThrowOnError>({
     security: [{ name: 'x-auth', type: 'apiKey' }],
     url: '/api/products/gift/{recipientEmail}',
-    ...options
-});
-
-/**
- * Get all user's products from all fridges in a certain location
- */
-export const getAllProductsInLocation = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsInLocationData, ThrowOnError>): RequestResult<GetAllProductsInLocationResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsInLocationResponses, unknown, ThrowOnError>({
-    security: [{ name: 'x-auth', type: 'apiKey' }],
-    url: '/api/products/location/{location}',
     ...options
 });
 

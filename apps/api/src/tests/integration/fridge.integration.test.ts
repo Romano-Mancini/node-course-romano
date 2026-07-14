@@ -173,7 +173,7 @@ describe("Integration tests", () => {
 			const { body: isolatedProducts } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.get(`/api/products?fridgeID=${oudeMarktFridgeA.id}`)
 				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
@@ -197,7 +197,7 @@ describe("Integration tests", () => {
 			const { body: originalGiverStock } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.get(`/api/products?fridgeID=${oudeMarktFridgeA.id}`)
 				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
@@ -206,7 +206,7 @@ describe("Integration tests", () => {
 			const { body: targetReceiverStock } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.get(`/api/products?fridgeID=${oudeMarktFridgeA.id}`)
 				.set("x-auth", user2Token)
 				.expect(HttpStatus.OK);
 
@@ -222,7 +222,7 @@ describe("Integration tests", () => {
 				.expect(HttpStatus.NO_CONTENT);
 
 			const { body: postPurgeStock } = await request(app.getHttpServer())
-				.get(`/api/fridges/${oudeMarktFridgeA.id}/products`)
+				.get(`/api/products?fridgeID=${oudeMarktFridgeA.id}`)
 				.set("x-auth", user2Token)
 				.expect(HttpStatus.OK);
 
@@ -249,7 +249,7 @@ describe("Integration tests", () => {
 			const { body: userProductsList } = await request(
 				app.getHttpServer(),
 			)
-				.get("/api/products")
+				.get("/api/products/")
 				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 
@@ -375,11 +375,11 @@ describe("Integration tests", () => {
 				.set("x-auth", user1Token)
 				.expect(HttpStatus.CREATED);
 
-			const targetLocationParam = encodeURIComponent("Oude Markt");
 			const { body: locationAggregatedProducts } = await request(
 				app.getHttpServer(),
 			)
-				.get(`/api/products/location/${targetLocationParam}`)
+				.get("/api/products")
+				.query({ location: "Oude Markt" })
 				.set("x-auth", user1Token)
 				.expect(HttpStatus.OK);
 

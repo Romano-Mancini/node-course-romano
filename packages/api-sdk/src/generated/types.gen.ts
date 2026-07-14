@@ -233,24 +233,6 @@ export type DeleteWholeFridgeResponses = {
     default: unknown;
 };
 
-export type GetAllProductsFromFridgeData = {
-    body?: never;
-    path: {
-        fridgeId: string;
-    };
-    query?: never;
-    url: '/api/fridges/{fridgeId}/products';
-};
-
-export type GetAllProductsFromFridgeResponses = {
-    /**
-     * Products correctly retrieved.
-     */
-    default: Array<ProductView>;
-};
-
-export type GetAllProductsFromFridgeResponse = GetAllProductsFromFridgeResponses[keyof GetAllProductsFromFridgeResponses];
-
 export type PutProductFridgeData = {
     body: ProductBody;
     path: {
@@ -301,18 +283,19 @@ export type DeleteAllProductsResponses = {
 export type GetAllProductsData = {
     body?: never;
     path?: never;
-    query?: never;
+    query: {
+        location: string;
+        fridgeID: string;
+    };
     url: '/api/products';
 };
 
 export type GetAllProductsResponses = {
     /**
-     * Products correctly retrieved.
+     * Products retrieved successfully.
      */
-    default: Array<ProductView>;
+    default: unknown;
 };
-
-export type GetAllProductsResponse = GetAllProductsResponses[keyof GetAllProductsResponses];
 
 export type DeleteProductData = {
     body?: never;
@@ -381,22 +364,6 @@ export type GiftAllProductsData = {
 export type GiftAllProductsResponses = {
     /**
      * Products correctly transferred.
-     */
-    default: unknown;
-};
-
-export type GetAllProductsInLocationData = {
-    body?: never;
-    path: {
-        location: string;
-    };
-    query?: never;
-    url: '/api/products/location/{location}';
-};
-
-export type GetAllProductsInLocationResponses = {
-    /**
-     * Products correctly deleted.
      */
     default: unknown;
 };

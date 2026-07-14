@@ -70,12 +70,12 @@ export default function UsersPage() {
 					</Link>
 
 					<Link href="/fridges">
-						<Button>Fridge</Button>
+						<Button>Fridges</Button>
 					</Link>
 
-					<Button onClick={() => setEditing({ mode: "create" })}>
-						New user
-					</Button>
+					<Link href="/users">
+						<Button>Users</Button>
+					</Link>
 
 					<Button variant="ghost" onClick={logout}>
 						Log out
@@ -202,6 +202,11 @@ export default function UsersPage() {
 					</Card>
 				</div>
 			)}
+			<div className="mt-6 flex justify-center">
+				<Button onClick={() => setEditing({ mode: "create" })}>
+					New user
+				</Button>
+			</div>
 		</main>
 	);
 }

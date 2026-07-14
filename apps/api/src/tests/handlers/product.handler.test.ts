@@ -10,7 +10,6 @@ import { ProductType } from "../../contracts/product.body";
 import { giftProduct } from "../../controllers/fridge/handlers/gift.handler";
 import { deleteProduct } from "../../controllers/fridge/handlers/delete.handler";
 import { getProduct } from "../../controllers/fridge/handlers/get.handler";
-import { getAllProducts } from "../../controllers/fridge/handlers/getallproducts.handler";
 import { giftAllProducts } from "../../controllers/fridge/handlers/giftallproducts.handler";
 import { deleteAllProducts } from "../../controllers/fridge/handlers/deleteall.handler";
 
@@ -375,67 +374,6 @@ describe("Product handlers", () => {
 				expect(err).instanceOf(NotFoundException);
 				expect(err.message).equal("There is no product with this id.");
 			}
-		});
-	});
-
-	describe("getAllProducts handler", () => {
-		it("should return all products owned by the user", async () => {
-			await prisma.product.createMany({
-				data: [
-					{
-						name: "Bread",
-						type: ProductType.FOOD,
-						size: 2,
-						ownerId: users[0].id,
-						fridgeId: fridges[0].id,
-					},
-					{
-						name: "Milk",
-						type: ProductType.DRINK,
-						size: 1,
-						ownerId: users[0].id,
-						fridgeId: fridges[1].id,
-					},
-				],
-			});
-
-			const res = await getAllProducts(users[0].id);
-
-			expect(res).to.have.length(2);
-			expect(res.every((p) => p.ownerId === users[0].id)).to.be.true;
-		});
-
-		it("should not return products owned by another user", async () => {
-			await prisma.product.createMany({
-				data: [
-					{
-						name: "Bread",
-						type: ProductType.FOOD,
-						size: 2,
-						ownerId: users[0].id,
-						fridgeId: fridges[0].id,
-					},
-					{
-						name: "Chocolate",
-						type: ProductType.FOOD,
-						size: 1,
-						ownerId: users[1].id,
-						fridgeId: fridges[0].id,
-					},
-				],
-			});
-
-			const res = await getAllProducts(users[0].id);
-
-			expect(res).to.have.length(1);
-			expect(res[0].name).equal("Bread");
-			expect(res[0].ownerId).equal(users[0].id);
-		});
-
-		it("should return an empty array when the user owns no products", async () => {
-			const res = await getAllProducts(users[0].id);
-
-			expect(res).to.have.length(0);
 		});
 	});
 

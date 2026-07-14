@@ -348,43 +348,6 @@
           "fridges"
         ]
       },
-      "get": {
-        "operationId": "getAllProductsFromFridge",
-        "parameters": [
-          {
-            "name": "fridgeId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "Products correctly retrieved.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductView"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "x-auth": []
-          }
-        ],
-        "summary": "Get all user's products from a fridge",
-        "tags": [
-          "fridges"
-        ]
-      },
       "delete": {
         "operationId": "deleteWholeFridge",
         "parameters": [
@@ -453,20 +416,27 @@
     "/api/products": {
       "get": {
         "operationId": "getAllProducts",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "location",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fridgeID",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
-            "description": "Products correctly retrieved.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductView"
-                  }
-                }
-              }
-            }
+            "description": "Products retrieved successfully."
           }
         },
         "security": [
@@ -474,7 +444,7 @@
             "x-auth": []
           }
         ],
-        "summary": "Get all user's products",
+        "summary": "Get all user's products, filtering if params are provided",
         "tags": [
           "fridges"
         ]
@@ -636,35 +606,6 @@
           }
         ],
         "summary": "Gift all products to another user",
-        "tags": [
-          "fridges"
-        ]
-      }
-    },
-    "/api/products/location/{location}": {
-      "get": {
-        "operationId": "getAllProductsInLocation",
-        "parameters": [
-          {
-            "name": "location",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "Products correctly deleted."
-          }
-        },
-        "security": [
-          {
-            "x-auth": []
-          }
-        ],
-        "summary": "Get all user's products from all fridges in a certain location",
         "tags": [
           "fridges"
         ]

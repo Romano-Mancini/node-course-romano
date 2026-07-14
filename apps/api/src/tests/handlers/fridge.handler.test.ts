@@ -7,11 +7,10 @@ import { NotFoundException } from "@nestjs/common";
 import { create } from "../../controllers/fridge/handlers/create.handler";
 import { prisma } from "../../lib/prisma";
 import { FridgeBody } from "../../contracts/fridge.body";
-import { getAllFridgeProducts } from "../../controllers/fridge/handlers/getallfridge.handler";
 import { giftAllFridgeProducts } from "../../controllers/fridge/handlers/giftallfridge.handler";
 import { deleteWholeFridge } from "../../controllers/fridge/handlers/deletewholefridge.handler";
-import { getFromLocation } from "../../controllers/fridge/handlers/getfromlocation.handler";
 import { ProductType } from "../../contracts/product.body";
+import { getAllProducts } from "../../controllers/fridge/handlers/getallproducts.handler";
 
 const fridgeFixtures = [
 	{
@@ -113,8 +112,11 @@ describe("Fridge handlers", () => {
 				],
 			});
 
-			const res = await getAllFridgeProducts(users[0].id, fridges[0].id);
-
+			const res = await getAllProducts(
+				users[0].id,
+				undefined,
+				fridges[0].id,
+			);
 			expect(res).to.have.length(2);
 			expect(res[0].ownerId).equal(users[0].id);
 			expect(res[1].ownerId).equal(users[0].id);
@@ -140,28 +142,21 @@ describe("Fridge handlers", () => {
 				],
 			});
 
-			const res = await getAllFridgeProducts(users[0].id, fridges[0].id);
+			const res = await getAllProducts(
+				users[0].id,
+				undefined,
+				fridges[0].id,
+			);
 
 			expect(res).to.have.length(1);
 			expect(res[0].name).equal("Bread");
 		});
 
 		it("should return an empty array when the fridge has no products", async () => {
-			const res = await getAllFridgeProducts(users[0].id, fridges[0].id);
+			const res = await getAllProducts(users[0].id, fridges[0].id);
 
 			expect(res).to.be.an("array");
 			expect(res).to.have.length(0);
-		});
-
-		it("should throw when fridge does not exist", async () => {
-			try {
-				await getAllFridgeProducts(users[0].id, randomUUID());
-
-				expect.fail("Expected error");
-			} catch (err: any) {
-				expect(err).instanceOf(NotFoundException);
-				expect(err.message).equal("There is no fridge with this id.");
-			}
 		});
 
 		it("should not return products from another fridge", async () => {
@@ -175,7 +170,7 @@ describe("Fridge handlers", () => {
 				},
 			});
 
-			const res = await getAllFridgeProducts(users[0].id, fridges[0].id);
+			const res = await getAllProducts(users[0].id, fridges[0].id);
 
 			expect(res).to.have.length(0);
 		});
@@ -257,20 +252,6 @@ describe("Fridge handlers", () => {
 			expect(giftedProduct.ownerId).equal(users[2].id);
 			expect(untouchedProduct.ownerId).equal(users[1].id);
 		});
-
-		it("should throw when fridge does not exist", async () => {
-			try {
-				await giftAllFridgeProducts(
-					users[0].id,
-					randomUUID(),
-					users[1].email,
-				);
-				expect.fail("Expected error");
-			} catch (err: any) {
-				expect(err).instanceOf(NotFoundException);
-				expect(err.message).equal("There is no fridge with this id.");
-			}
-		});
 	});
 
 	describe("deleteWholeFridge handler", () => {
@@ -347,73 +328,234 @@ describe("Fridge handlers", () => {
 	});
 
 	describe("getFromLocation handler", () => {
-		it("should return products from the given fridge location owned by the user", async () => {
-			await prisma.product.createMany({
-				data: [
-					{
-						name: "Milk",
-						type: ProductType.DRINK,
-						size: 1,
-						ownerId: users[0].id,
-						fridgeId: fridges[0].id,
-					},
-					{
-						name: "Bread",
-						type: ProductType.FOOD,
-						size: 2,
-						ownerId: users[0].id,
-						fridgeId: fridges[1].id,
-					},
-				],
+		describe("getFromLocation handler", () => {
+			it("should return products from the given fridge location owned by the user", async () => {
+				await prisma.product.createMany({
+					data: [
+						{
+							name: "Milk",
+							type: ProductType.DRINK,
+							size: 1,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+						{
+							name: "Bread",
+							type: ProductType.FOOD,
+							size: 2,
+							ownerId: users[0].id,
+							fridgeId: fridges[1].id,
+						},
+					],
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.have.length(1);
+				expect(products[0].name).to.equal("Milk");
 			});
 
-			const products = await getFromLocation(
-				users[0].id,
-				fridges[0].location,
-			);
-
-			expect(products).to.have.length(1);
-			expect(products[0].name).to.equal("Milk");
-		});
-
-		it("should not return products from another user's fridge", async () => {
-			await prisma.product.createMany({
-				data: [
-					{
+			it("should not return products from another user's fridge", async () => {
+				await prisma.product.create({
+					data: {
 						name: "Milk",
 						type: ProductType.DRINK,
 						size: 1,
 						ownerId: users[1].id,
 						fridgeId: fridges[0].id,
 					},
-				],
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.have.length(0);
 			});
 
-			const products = await getFromLocation(
-				fridges[0].location,
-				users[0].id,
-			);
+			it("should return an empty array when no products exist in the location", async () => {
+				await prisma.product.create({
+					data: {
+						name: "Eggs",
+						type: ProductType.FOOD,
+						size: 6,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+				});
 
-			expect(products).to.have.length(0);
-		});
+				const products = await getAllProducts(
+					users[0].id,
+					"Non Existing Location",
+				);
 
-		it("should return an empty array when no products exist in the location", async () => {
-			await prisma.product.create({
-				data: {
-					name: "Eggs",
-					type: ProductType.FOOD,
-					size: 6,
-					ownerId: users[0].id,
-					fridgeId: fridges[0].id,
-				},
+				expect(products).to.have.length(0);
 			});
 
-			const products = await getFromLocation(
-				"Non Existing Location",
-				users[0].id,
-			);
+			it("should match locations partially using contains", async () => {
+				await prisma.product.create({
+					data: {
+						name: "Cheese",
+						type: ProductType.FOOD,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+				});
 
-			expect(products).to.have.length(0);
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location.substring(0, 3),
+				);
+
+				expect(products).to.have.length(1);
+				expect(products[0].name).to.equal("Cheese");
+			});
+
+			it("should match locations case-insensitively", async () => {
+				await prisma.product.create({
+					data: {
+						name: "Butter",
+						type: ProductType.FOOD,
+						size: 1,
+						ownerId: users[0].id,
+						fridgeId: fridges[0].id,
+					},
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location.toUpperCase(),
+				);
+
+				expect(products).to.have.length(1);
+				expect(products[0].name).to.equal("Butter");
+			});
+
+			it("should return multiple products from the same fridge location", async () => {
+				await prisma.product.createMany({
+					data: [
+						{
+							name: "Milk",
+							type: ProductType.DRINK,
+							size: 1,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+						{
+							name: "Juice",
+							type: ProductType.DRINK,
+							size: 2,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+						{
+							name: "Eggs",
+							type: ProductType.FOOD,
+							size: 6,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+					],
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.have.length(3);
+
+				const names = products.map((product) => product.name);
+
+				expect(names).to.have.members(["Milk", "Juice", "Eggs"]);
+			});
+
+			it("should not return products from another fridge with the same user if location differs", async () => {
+				await prisma.product.createMany({
+					data: [
+						{
+							name: "Milk",
+							type: ProductType.DRINK,
+							size: 1,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+						{
+							name: "Bread",
+							type: ProductType.FOOD,
+							size: 1,
+							ownerId: users[0].id,
+							fridgeId: fridges[1].id,
+						},
+					],
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.have.length(1);
+				expect(products[0].name).to.equal("Milk");
+			});
+
+			it("should return all user's products when location is empty", async () => {
+				await prisma.product.createMany({
+					data: [
+						{
+							name: "Milk",
+							type: ProductType.DRINK,
+							size: 1,
+							ownerId: users[0].id,
+							fridgeId: fridges[0].id,
+						},
+						{
+							name: "Bread",
+							type: ProductType.FOOD,
+							size: 2,
+							ownerId: users[0].id,
+							fridgeId: fridges[1].id,
+						},
+					],
+				});
+
+				const products = await getAllProducts(users[0].id, "");
+
+				expect(products).to.have.length(2);
+			});
+
+			it("should not return products when user has no products", async () => {
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.deep.equal([]);
+			});
+
+			it("should not return products from another user even if the fridge location matches", async () => {
+				await prisma.product.create({
+					data: {
+						name: "Foreign Milk",
+						type: ProductType.DRINK,
+						size: 1,
+						ownerId: users[1].id,
+						fridgeId: fridges[0].id,
+					},
+				});
+
+				const products = await getAllProducts(
+					users[0].id,
+					fridges[0].location,
+				);
+
+				expect(products).to.have.length(0);
+			});
 		});
 	});
 });

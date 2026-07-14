@@ -28,13 +28,11 @@ import { giftProduct } from "./handlers/gift.handler";
 import { ProductView } from "../../contracts/product.view";
 import { deleteProduct } from "./handlers/delete.handler";
 import { getProduct } from "./handlers/get.handler";
-import { getAllFridgeProducts } from "./handlers/getallfridge.handler";
 import { giftAllFridgeProducts } from "./handlers/giftallfridge.handler";
 import { deleteWholeFridge } from "./handlers/deletewholefridge.handler";
-import { getAllProducts } from "./handlers/getallproducts.handler";
 import { giftAllProducts } from "./handlers/giftallproducts.handler";
 import { deleteAllProducts } from "./handlers/deleteall.handler";
-import { getFromLocation } from "./handlers/getfromlocation.handler";
+import { getAllProducts } from "./handlers/getallproducts.handler";
 import { RecipeBody } from "../../contracts/recipeBody";
 import { createRecipe } from "./handlers/create.recipe.handler";
 import { deleteRecipe } from "./handlers/delete.recipe.handler";
@@ -120,24 +118,6 @@ export class FridgeController {
 		return putProduct(req.user.userId, fridgeId, body);
 	}
 
-	@Get("fridges/:fridgeId/products")
-	@UseGuards(JwtAuthGuard)
-	@ApiSecurity("x-auth")
-	@ApiOperation({
-		operationId: "getAllProductsFromFridge",
-		summary: "Get all user's products from a fridge",
-	})
-	@ApiResponse({
-		description: "Products correctly retrieved.",
-		type: [ProductView],
-	})
-	async getAllFridgeProducts(
-		@Req() req: any,
-		@Param("fridgeId") fridgeId: string,
-	) {
-		return getAllFridgeProducts(req.user.userId, fridgeId);
-	}
-
 	@Patch("fridges/:fridgeId/products/gift/:receiverEmail")
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
@@ -179,15 +159,18 @@ export class FridgeController {
 	@ApiSecurity("x-auth")
 	@ApiOperation({
 		operationId: "getAllProducts",
-		summary: "Get all user's products",
+		summary: "Get all user's products, filtering if params are provided",
 	})
 	@ApiResponse({
-		description: "Products correctly retrieved.",
-		type: [ProductView],
+		description: "Products retrieved successfully.",
 	})
 	@HttpCode(HttpStatus.OK)
-	async getAllProducts(@Req() req: any) {
-		return getAllProducts(req.user.userId);
+	async getAllProducts(
+		@Req() req: any,
+		@Query("location") location: string,
+		@Query("fridgeID") fridgeID: string,
+	) {
+		return getAllProducts(req.user.userId, location, fridgeID);
 	}
 
 	@Get("products/:productId")
@@ -274,25 +257,6 @@ export class FridgeController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAllProducts(@Req() req: any) {
 		return deleteAllProducts(req.user.userId);
-	}
-
-	@Get("products/location/:location")
-	@UseGuards(JwtAuthGuard)
-	@ApiSecurity("x-auth")
-	@ApiOperation({
-		operationId: "getAllProductsInLocation",
-		summary:
-			"Get all user's products from all fridges in a certain location",
-	})
-	@ApiResponse({
-		description: "Products correctly deleted.",
-	})
-	@HttpCode(HttpStatus.OK)
-	async getFromLocation(
-		@Req() req: any,
-		@Param("location") location: string,
-	) {
-		return getFromLocation(req.user.userId, location);
 	}
 
 	@Post("recipes")
