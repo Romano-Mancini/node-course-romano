@@ -27,13 +27,13 @@ export type AccessTokenView = {
     expiresIn: number;
 };
 
-export type FridgeBody = {
+export type FridgeView = {
+    id: string;
     location: string;
     capacity: number;
 };
 
-export type FridgeView = {
-    id: string;
+export type FridgeBody = {
     location: string;
     capacity: number;
 };
@@ -166,6 +166,22 @@ export type LoginResponses = {
 };
 
 export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type GetAllFridgesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api';
+};
+
+export type GetAllFridgesResponses = {
+    /**
+     * Fridges returned successfully
+     */
+    201: Array<FridgeView>;
+};
+
+export type GetAllFridgesResponse = GetAllFridgesResponses[keyof GetAllFridgesResponses];
 
 export type CreateFridgeData = {
     body: FridgeBody;

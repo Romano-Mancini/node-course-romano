@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 import type { UserView } from "@node-course/api-sdk";
+
 import {
 	useCreateUser,
 	useDeleteUser,
 	useUpdateUser,
 	useUsers,
 } from "@/lib/api-hooks";
+
 import { clearToken, isAuthenticated } from "@/lib/auth";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,8 +24,11 @@ type Editing = { mode: "create" } | { mode: "edit"; user: UserView } | null;
 
 export default function UsersPage() {
 	const router = useRouter();
+
 	const [authChecked, setAuthChecked] = useState(false);
+
 	const [search, setSearch] = useState("");
+
 	const [editing, setEditing] = useState<Editing>(null);
 
 	useEffect(() => {
@@ -32,14 +40,18 @@ export default function UsersPage() {
 	}, [router]);
 
 	const usersQuery = useUsers(search);
+
 	const createUser = useCreateUser();
+
 	const updateUser = useUpdateUser();
+
 	const deleteUser = useDeleteUser();
 
 	if (!authChecked) return null;
 
 	const logout = () => {
 		clearToken();
+
 		router.replace("/login");
 	};
 
@@ -47,10 +59,24 @@ export default function UsersPage() {
 		<main className="mx-auto max-w-3xl px-4 py-10">
 			<header className="mb-6 flex items-center justify-between">
 				<h1 className="text-2xl font-semibold">Users</h1>
+
 				<div className="flex gap-2">
+					<Link href="/products">
+						<Button>Products</Button>
+					</Link>
+
+					<Link href="/recipes">
+						<Button>Recipes</Button>
+					</Link>
+
+					<Link href="/fridges">
+						<Button>Fridge</Button>
+					</Link>
+
 					<Button onClick={() => setEditing({ mode: "create" })}>
 						New user
 					</Button>
+
 					<Button variant="ghost" onClick={logout}>
 						Log out
 					</Button>
@@ -68,12 +94,19 @@ export default function UsersPage() {
 				{usersQuery.isLoading && (
 					<p className="p-4 text-sm text-slate-500">Loading…</p>
 				)}
+
 				{usersQuery.isError && (
-					<p className="p-4 text-sm text-red-600">Failed to load users.</p>
+					<p className="p-4 text-sm text-red-600">
+						Failed to load users.
+					</p>
 				)}
+
 				{usersQuery.data?.length === 0 && (
-					<p className="p-4 text-sm text-slate-500">No users found.</p>
+					<p className="p-4 text-sm text-slate-500">
+						No users found.
+					</p>
 				)}
+
 				{usersQuery.data?.map((user) => (
 					<div
 						key={user.id}
@@ -81,15 +114,25 @@ export default function UsersPage() {
 					>
 						<div>
 							<p className="font-medium">{user.name}</p>
-							<p className="text-sm text-slate-500">{user.email}</p>
+
+							<p className="text-sm text-slate-500">
+								{user.email}
+							</p>
 						</div>
+
 						<div className="flex gap-2">
 							<Button
 								variant="secondary"
-								onClick={() => setEditing({ mode: "edit", user })}
+								onClick={() =>
+									setEditing({
+										mode: "edit",
+										user,
+									})
+								}
 							>
 								Edit
 							</Button>
+
 							<Button
 								variant="danger"
 								disabled={deleteUser.isPending}
@@ -110,24 +153,48 @@ export default function UsersPage() {
 				<div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4">
 					<Card className="w-full max-w-md p-6">
 						<h2 className="mb-4 text-lg font-semibold">
-							{editing.mode === "create" ? "New user" : "Edit user"}
+							{editing.mode === "create"
+								? "New user"
+								: "Edit user"}
 						</h2>
+
 						<UserForm
 							initialValues={
 								editing.mode === "edit"
-									? { name: editing.user.name, email: editing.user.email }
+									? {
+											name: editing.user.name,
+
+											email: editing.user.email,
+										}
 									: undefined
 							}
-							submitLabel={editing.mode === "create" ? "Create" : "Save"}
-							pending={createUser.isPending || updateUser.isPending}
+							submitLabel={
+								editing.mode === "create" ? "Create" : "Save"
+							}
+							pending={
+								createUser.isPending || updateUser.isPending
+							}
 							onCancel={() => setEditing(null)}
 							onSubmit={(body) => {
 								if (editing.mode === "create") {
-									createUser.mutate(body, { onSuccess: () => setEditing(null) });
+									createUser.mutate(
+										body,
+
+										{
+											onSuccess: () => setEditing(null),
+										},
+									);
 								} else {
 									updateUser.mutate(
-										{ id: editing.user.id, body },
-										{ onSuccess: () => setEditing(null) }
+										{
+											id: editing.user.id,
+
+											body,
+										},
+
+										{
+											onSuccess: () => setEditing(null),
+										},
 									);
 								}
 							}}

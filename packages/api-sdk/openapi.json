@@ -209,6 +209,36 @@
         ]
       }
     },
+    "/api": {
+      "get": {
+        "operationId": "getAllFridges",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Fridges returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FridgeView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "x-auth": []
+          }
+        ],
+        "summary": "Returns all fridges",
+        "tags": [
+          "fridges"
+        ]
+      }
+    },
     "/api/fridges": {
       "post": {
         "operationId": "createFridge",
@@ -867,21 +897,6 @@
           "expiresIn"
         ]
       },
-      "FridgeBody": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string"
-          },
-          "capacity": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "location",
-          "capacity"
-        ]
-      },
       "FridgeView": {
         "type": "object",
         "properties": {
@@ -898,6 +913,21 @@
         },
         "required": [
           "id",
+          "location",
+          "capacity"
+        ]
+      },
+      "FridgeBody": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "number"
+          }
+        },
+        "required": [
           "location",
           "capacity"
         ]

@@ -31,7 +31,6 @@ import { getList } from "./handlers/getList.handler";
 import { update } from "./handlers/update.handler";
 import { UserView } from "../../contracts/user.view";
 import { JwtAuthGuard } from "../../guards/jsw-auth.guard";
-import { Transform } from "class-transformer";
 
 @ApiTags("users")
 @Controller("users")

@@ -43,10 +43,28 @@ import { UpdateBody } from "../../contracts/update.body";
 import { getAllRecipes } from "./handlers/getall.recipe";
 import { getRecipe } from "./handlers/get.recipe";
 import { getMissingIngredients } from "./handlers/getmissing.recipe";
+import { getAllFridges } from "./handlers/getallfridges.handler";
 
 @ApiTags("fridges")
 @Controller()
 export class FridgeController {
+	@Get()
+	@HttpCode(HttpStatus.CREATED)
+	@UseGuards(JwtAuthGuard)
+	@ApiSecurity("x-auth")
+	@ApiOperation({
+		operationId: "getAllFridges",
+		summary: "Returns all fridges",
+	})
+	@ApiResponse({
+		status: 201,
+		description: "Fridges returned successfully",
+		type: [FridgeView],
+	})
+	async getAllFridges() {
+		return getAllFridges();
+	}
+
 	@Post("fridges")
 	@HttpCode(HttpStatus.CREATED)
 	@UseGuards(JwtAuthGuard)

@@ -11,6 +11,8 @@ import {
 	deleteUserRecipe,
 	deleteWholeFridge,
 	FridgeBody,
+	FridgeView,
+	getAllFridges,
 	getAllProducts,
 	getAllProductsFromFridge,
 	getAllProductsInLocation,
@@ -24,6 +26,7 @@ import {
 	listUsers,
 	login,
 	ProductBody,
+	ProductView,
 	putProductFridge,
 	RecipeBody,
 	UpdateBody,
@@ -191,19 +194,20 @@ export function useGiftAllProductsFromFridge() {
 }
 
 export function useGetProducts() {
-	return useQuery({
+	return useQuery<ProductView[]>({
 		queryKey: [...FRIDGE_KEY],
 		queryFn: async () => {
 			const { data, error } = await getAllProducts({});
 
 			if (error) throw error;
-			return data!;
+
+			return (data ?? []) as ProductView[];
 		},
 	});
 }
 
 export function useProductsByLocation(location: string) {
-	return useQuery({
+	return useQuery<ProductView[]>({
 		queryKey: [...FRIDGE_KEY, location],
 		queryFn: async () => {
 			const { data, error } = await getAllProductsInLocation({
@@ -211,7 +215,8 @@ export function useProductsByLocation(location: string) {
 			});
 
 			if (error) throw error;
-			return data!;
+
+			return (data ?? []) as ProductView[];
 		},
 	});
 }
@@ -308,13 +313,14 @@ export function useGiftAllProducts() {
 }
 
 export function useRecipes() {
-	return useQuery({
+	return useQuery<RecipeBody[]>({
 		queryKey: [...RECIPE_KEY],
 		queryFn: async () => {
 			const { data, error } = await getUserRecipes({});
 
 			if (error) throw error;
-			return data!;
+
+			return (data ?? []) as RecipeBody[];
 		},
 	});
 }
@@ -399,6 +405,19 @@ export function useMissingIngredients(recipeName: string) {
 
 			if (error) throw error;
 			return data!;
+		},
+	});
+}
+
+export function useAllFridges() {
+	return useQuery<FridgeView[]>({
+		queryKey: [...FRIDGE_KEY],
+		queryFn: async () => {
+			const { data, error } = await getAllFridges({});
+
+			if (error) throw error;
+
+			return (data ?? []) as FridgeView[];
 		},
 	});
 }

@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateFridgeData, CreateFridgeResponses, CreateRecipeData, CreateRecipeResponses, CreateUserData, CreateUserResponses, DeleteAllProductsData, DeleteAllProductsResponses, DeleteProductData, DeleteProductResponses, DeleteUserData, DeleteUserRecipeData, DeleteUserRecipeResponses, DeleteUserResponses, DeleteWholeFridgeData, DeleteWholeFridgeResponses, GetAllProductsData, GetAllProductsFromFridgeData, GetAllProductsFromFridgeResponses, GetAllProductsInLocationData, GetAllProductsInLocationResponses, GetAllProductsResponses, GetMissingIngredientsData, GetMissingIngredientsResponses, GetProductData, GetProductResponses, GetUserRecipes2Data, GetUserRecipes2Responses, GetUserRecipesData, GetUserRecipesResponses, GiftAllProductsData, GiftAllProductsFridgeData, GiftAllProductsFridgeResponses, GiftAllProductsResponses, GiftProductData, GiftProductResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, PutProductFridgeData, PutProductFridgeResponses, RetrieveUserData, RetrieveUserResponses, UpdateUserData, UpdateUserRecipeData, UpdateUserRecipeResponses, UpdateUserResponses } from './types.gen';
+import type { CreateFridgeData, CreateFridgeResponses, CreateRecipeData, CreateRecipeResponses, CreateUserData, CreateUserResponses, DeleteAllProductsData, DeleteAllProductsResponses, DeleteProductData, DeleteProductResponses, DeleteUserData, DeleteUserRecipeData, DeleteUserRecipeResponses, DeleteUserResponses, DeleteWholeFridgeData, DeleteWholeFridgeResponses, GetAllFridgesData, GetAllFridgesResponses, GetAllProductsData, GetAllProductsFromFridgeData, GetAllProductsFromFridgeResponses, GetAllProductsInLocationData, GetAllProductsInLocationResponses, GetAllProductsResponses, GetMissingIngredientsData, GetMissingIngredientsResponses, GetProductData, GetProductResponses, GetUserRecipes2Data, GetUserRecipes2Responses, GetUserRecipesData, GetUserRecipesResponses, GiftAllProductsData, GiftAllProductsFridgeData, GiftAllProductsFridgeResponses, GiftAllProductsResponses, GiftProductData, GiftProductResponses, ListUsersData, ListUsersResponses, LoginData, LoginResponses, PutProductFridgeData, PutProductFridgeResponses, RetrieveUserData, RetrieveUserResponses, UpdateUserData, UpdateUserRecipeData, UpdateUserRecipeResponses, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -80,6 +80,15 @@ export const login = <ThrowOnError extends boolean = false>(options: Options<Log
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Returns all fridges
+ */
+export const getAllFridges = <ThrowOnError extends boolean = false>(options?: Options<GetAllFridgesData, ThrowOnError>): RequestResult<GetAllFridgesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAllFridgesResponses, unknown, ThrowOnError>({
+    security: [{ name: 'x-auth', type: 'apiKey' }],
+    url: '/api',
+    ...options
 });
 
 /**
