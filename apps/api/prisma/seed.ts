@@ -6,6 +6,9 @@ const prisma = new PrismaClient();
 async function main() {
 	// Clear existing data
 	await prisma.user.deleteMany();
+	await prisma.recipe.deleteMany();
+	await prisma.fridge.deleteMany();
+	await prisma.product.deleteMany();
 
 	// Create initial users
 	const [john, jane] = await Promise.all([

@@ -61,10 +61,6 @@ export default function UsersPage() {
 				<h1 className="text-2xl font-semibold">Users</h1>
 
 				<div className="flex gap-2">
-					<Link href="/products">
-						<Button>Products</Button>
-					</Link>
-
 					<Link href="/recipes">
 						<Button>Recipes</Button>
 					</Link>
@@ -202,7 +198,7 @@ export default function UsersPage() {
 					</Card>
 				</div>
 			)}
-			<div className="mt-6 flex justify-center">
+			<div className="mt-6 flex justify-end">
 				<Button onClick={() => setEditing({ mode: "create" })}>
 					New user
 				</Button>
