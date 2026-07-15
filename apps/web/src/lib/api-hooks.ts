@@ -39,6 +39,7 @@ const USERS_KEY = ["users"];
 const FRIDGE_KEY = ["fridges"];
 const PRODUCT_KEY = ["product"];
 const RECIPE_KEY = ["recipes"];
+const SUGGESTION_KEY = ["suggestions"];
 
 // Every hook calls a typed SDK function, checks the `{ data, error }` result,
 // and lets TanStack Query handle loading/error/caching state.
@@ -412,7 +413,7 @@ export function useGetFridge(fridgeId: string) {
 
 export function useRecipeSuggestions() {
 	return useQuery<RecipeBody[]>({
-		queryKey: [...FRIDGE_KEY],
+		queryKey: [...SUGGESTION_KEY],
 		queryFn: async () => {
 			const { data, error } = await getSuggestions();
 			console.log("data: ", data);

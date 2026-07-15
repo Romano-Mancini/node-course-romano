@@ -63,8 +63,8 @@ export default function FridgePage() {
 	const deleteFridge = useDeleteWholeFridge();
 	const deleteAllItems = useDeleteAllProducts();
 	const giftProduct = useGiftProduct();
-	const giftProductWhole = useGiftAllProductsFromFridge();
 	const giftAllProducts = useGiftAllProducts();
+	const giftWholeFridge = useGiftAllProductsFromFridge();
 
 	const deleteProduct = useDeleteProduct();
 	const productsByFridge = new Map<string, ProductView[]>();
@@ -320,6 +320,52 @@ export default function FridgePage() {
 									type="button"
 									variant="secondary"
 									onClick={() => setIsGifting(false)}
+								>
+									Back
+								</Button>
+							</div>
+						</div>
+					</Card>
+				</div>
+			)}{" "}
+			{isGiftingWhole && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+					<Card className="w-full max-w-md p-5">
+						<div className="mb-4">
+							<h2 className="mb-3 text-base font-medium">
+								Gifting whole fridge:
+							</h2>
+
+							<Input
+								placeholder="Email of the receiver user"
+								value={receiverEmailWhole}
+								onChange={(event) =>
+									setReceiverEmailWhole(event.target.value)
+								}
+								className="mb-4"
+							/>
+						</div>
+
+						<div className="flex justify-end pt-2 gap-2">
+							<div className="flex justify-end pt-2 gap-2">
+								<Button
+									type="button"
+									variant="primary"
+									onClick={() => {
+										giftWholeFridge.mutate({
+											fridgeId: giftingIdWhole,
+											receiverEmail: receiverEmailWhole,
+										});
+										setIsGiftingWhole(false);
+									}}
+								>
+									Gift fridge's content
+								</Button>
+
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() => setIsGiftingWhole(false)}
 								>
 									Back
 								</Button>

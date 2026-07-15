@@ -5,19 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import {
-	useAddProductToFridge,
-	useAllFridges,
-	useAllProducts,
 	useCreateRecipe,
-	useDeleteAllProducts,
-	useDeleteProduct,
 	useDeleteRecipe,
-	useDeleteWholeFridge,
-	useGiftAllProducts,
-	useGiftAllProductsFromFridge,
-	useGiftProduct,
 	useMissingIngredients,
-	useProduct,
 	useRecipes,
 	useRecipeSuggestions,
 	useUpdateRecipe,
@@ -27,9 +17,6 @@ import { clearToken, isAuthenticated } from "@/lib/auth";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ProductView } from "@node-course/api-sdk";
-import { ProductForm } from "@/components/product-form";
 import { RecipeForm } from "@/components/recipe-form";
 import { UpdateRecipeForm } from "@/components/updaterecipe-form";
 
@@ -170,42 +157,41 @@ export default function FridgePage() {
 					<span className="sr-only">Loading...</span>
 				</div>
 			)}
-			{suggested &&
-				suggestedRecipes.data?.map((recipe) => {
-					return (
-						<div
-							className="py-2"
+			{suggestedRecipes.data?.map((recipe) => {
+				return (
+					<div
+						className="py-2"
+						key={recipe.name + recipe.description}
+					>
+						{" "}
+						<Card
 							key={recipe.name + recipe.description}
+							className="p-4"
 						>
-							{" "}
-							<Card
-								key={recipe.name + recipe.description}
-								className="p-4"
-							>
-								<div>
-									<div className="py-2">
-										<h2 className="font-semibold">
-											{recipe.name}
-										</h2>
-									</div>
-									<div className="py-2">
-										<h2 className="font-semibold">
-											Description:
-										</h2>
-										{recipe.description + "."}
-									</div>
-									<div className="py-2">
-										<h2 className="font-semibold">
-											Ingredients:{" "}
-										</h2>
-										{recipe.ingredients?.join(", ") ??
-											"No ingredients"}
-									</div>
+							<div>
+								<div className="py-2">
+									<h2 className="font-semibold">
+										{recipe.name}
+									</h2>
 								</div>
-							</Card>
-						</div>
-					);
-				})}
+								<div className="py-2">
+									<h2 className="font-semibold">
+										Description:
+									</h2>
+									{recipe.description + "."}
+								</div>
+								<div className="py-2">
+									<h2 className="font-semibold">
+										Ingredients:{" "}
+									</h2>
+									{recipe.ingredients?.join(", ") ??
+										"No ingredients"}
+								</div>
+							</div>
+						</Card>
+					</div>
+				);
+			})}
 			{isCreating && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
 					<Card className="w-full max-w-md p-5">
