@@ -24,11 +24,8 @@ type Editing = { mode: "create" } | { mode: "edit"; user: UserView } | null;
 
 export default function UsersPage() {
 	const router = useRouter();
-
 	const [authChecked, setAuthChecked] = useState(false);
-
 	const [search, setSearch] = useState("");
-
 	const [editing, setEditing] = useState<Editing>(null);
 
 	useEffect(() => {
@@ -40,11 +37,8 @@ export default function UsersPage() {
 	}, [router]);
 
 	const usersQuery = useUsers(search);
-
 	const createUser = useCreateUser();
-
 	const updateUser = useUpdateUser();
-
 	const deleteUser = useDeleteUser();
 
 	if (!authChecked) return null;

@@ -1,7 +1,5 @@
 import { prisma } from "../../../lib/prisma";
-import { plainToInstance } from "class-transformer";
 import { NotFoundException } from "@nestjs/common";
-import { ProductView } from "../../../contracts/product.view";
 
 export const giftAllFridgeProducts = async (
 	userId: string,

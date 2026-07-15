@@ -4,7 +4,6 @@ import { expect } from "chai";
 import request from "supertest";
 
 import { AppModule } from "../../app.module";
-import { UserBody } from "../../contracts/user.body";
 import { prisma } from "../../lib/prisma";
 
 describe("Integration tests", () => {

@@ -37,7 +37,6 @@ import {
 
 const USERS_KEY = ["users"];
 const FRIDGE_KEY = ["fridges"];
-const PRODUCT_KEY = ["product"];
 const RECIPE_KEY = ["recipes"];
 const SUGGESTION_KEY = ["suggestions"];
 

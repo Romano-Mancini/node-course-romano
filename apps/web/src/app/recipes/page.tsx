@@ -37,8 +37,6 @@ export default function FridgePage() {
 	const missingIngredients = useMissingIngredients(analyzedMissingName);
 	const suggestedRecipes = useRecipeSuggestions();
 
-	const suggested = suggestedRecipes.data;
-
 	useEffect(() => {
 		if (!isAuthenticated()) {
 			router.replace("/login");

@@ -58,7 +58,7 @@ export default function FridgePage() {
 	const fridges = useAllFridges();
 	const fridgesData = fridges.data;
 	const products = useAllProducts(location, fridgeID);
-	const addproduct = useAddProductToFridge();
+	const addProduct = useAddProductToFridge();
 	const checkedProduct = useProduct(checkingId);
 	const deleteFridge = useDeleteWholeFridge();
 	const deleteAllItems = useDeleteAllProducts();

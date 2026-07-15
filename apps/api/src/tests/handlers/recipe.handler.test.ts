@@ -409,6 +409,6 @@ describe("Recipe Handlers", () => {
 		it("should return something", async () => {
 			const suggestions = await getSuggestions(users[0].id);
 			expect(suggestions).not.be.null;
-		}).timeout(10000); // extend the timeout, https://stackoverflow.com/questions/15971167/how-to-increase-timeout-for-a-single-test-case-in-mocha
+		}).timeout(100000); // extend the timeout because it is an LLM call
 	});
 });
