@@ -283,9 +283,9 @@ export type DeleteAllProductsResponses = {
 export type GetAllProductsData = {
     body?: never;
     path?: never;
-    query: {
-        location: string;
-        fridgeID: string;
+    query?: {
+        location?: string;
+        fridgeID?: string;
     };
     url: '/api/products';
 };

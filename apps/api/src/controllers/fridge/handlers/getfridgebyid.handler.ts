@@ -4,7 +4,7 @@ import { FridgeView } from "../../../contracts/fridge.view";
 import { NotFoundException } from "@nestjs/common";
 
 export const getFridgeById = async (fridgeId: string) => {
-	const res = await prisma.product.findUnique({ where: { id: fridgeId } });
+	const res = await prisma.fridge.findUnique({ where: { id: fridgeId } });
 	if (!res) {
 		throw new NotFoundException("There is no fridge with that ID.");
 	}

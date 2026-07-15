@@ -156,7 +156,7 @@ export const deleteAllProducts = <ThrowOnError extends boolean = false>(options?
 /**
  * Get all user's products, filtering if params are provided
  */
-export const getAllProducts = <ThrowOnError extends boolean = false>(options: Options<GetAllProductsData, ThrowOnError>): RequestResult<GetAllProductsResponses, unknown, ThrowOnError> => (options.client ?? client).get<GetAllProductsResponses, unknown, ThrowOnError>({
+export const getAllProducts = <ThrowOnError extends boolean = false>(options?: Options<GetAllProductsData, ThrowOnError>): RequestResult<GetAllProductsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAllProductsResponses, unknown, ThrowOnError>({
     security: [{ name: 'x-auth', type: 'apiKey' }],
     url: '/api/products',
     ...options

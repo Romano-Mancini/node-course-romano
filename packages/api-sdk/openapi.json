@@ -419,7 +419,7 @@
         "parameters": [
           {
             "name": "location",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -427,7 +427,7 @@
           },
           {
             "name": "fridgeID",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"

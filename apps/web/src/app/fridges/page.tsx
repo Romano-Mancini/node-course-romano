@@ -246,10 +246,10 @@ export default function FridgePage() {
 
 						<ProductForm
 							submitLabel="Add"
-							pending={addproduct.isPending}
+							pending={addProduct.isPending}
 							onCancel={() => setAdding(false)}
 							onSubmit={(body) => {
-								addproduct.mutate(
+								addProduct.mutate(
 									{
 										body,
 										fridgeId: selectedFridgeId,

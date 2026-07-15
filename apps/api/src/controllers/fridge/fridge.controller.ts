@@ -4,9 +4,7 @@ import {
 	Delete,
 	Get,
 	HttpCode,
-	HttpException,
 	HttpStatus,
-	NotFoundException,
 	Param,
 	Patch,
 	Post,
@@ -16,6 +14,7 @@ import {
 } from "@nestjs/common";
 import {
 	ApiOperation,
+	ApiQuery,
 	ApiResponse,
 	ApiSecurity,
 	ApiTags,
@@ -157,6 +156,16 @@ export class FridgeController {
 		return deleteWholeFridge(req.user.userId, fridgeId);
 	}
 
+	@ApiQuery({
+		name: "location",
+		required: false,
+		type: String,
+	})
+	@ApiQuery({
+		name: "fridgeID",
+		required: false,
+		type: String,
+	})
 	@Get("products")
 	@UseGuards(JwtAuthGuard)
 	@ApiSecurity("x-auth")
