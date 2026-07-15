@@ -16,6 +16,7 @@ import {
 	getAllProducts,
 	getMissingIngredients,
 	getProduct,
+	getSuggestions,
 	getUserRecipes,
 	getUserRecipes2,
 	giftAllProducts,
@@ -370,7 +371,7 @@ export function useDeleteRecipe() {
 }
 
 export function useMissingIngredients(recipeName: string) {
-	return useQuery({
+	return useQuery<string[]>({
 		queryKey: [...RECIPE_KEY, recipeName],
 		queryFn: async () => {
 			const { data, error } = await getMissingIngredients({
@@ -378,7 +379,7 @@ export function useMissingIngredients(recipeName: string) {
 			});
 
 			if (error) throw error;
-			return data!;
+			return (data ?? []) as string[];
 		},
 	});
 }
@@ -405,6 +406,21 @@ export function useGetFridge(fridgeId: string) {
 			if (error) throw error;
 
 			return (data ?? []) as FridgeView[];
+		},
+	});
+}
+
+export function useRecipeSuggestions() {
+	return useQuery<RecipeBody[]>({
+		queryKey: [...FRIDGE_KEY],
+		queryFn: async () => {
+			const { data, error } = await getSuggestions();
+			console.log("data: ", data);
+			console.log("error: ", error);
+
+			if (error) throw error;
+
+			return (data ?? []) as RecipeBody[];
 		},
 	});
 }

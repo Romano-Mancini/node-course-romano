@@ -118,9 +118,21 @@ async function main() {
 				ownerId: john.id,
 			},
 			{
+				name: "Pasta Carbonara",
+				description: "A simple recipe from Rome",
+				ingredients: ["Pasta", "Eggs", "Salt", "Pecorino"],
+				ownerId: john.id,
+			},
+			{
 				name: "Smoothie",
 				description: "Fresh fruit smoothie",
 				ingredients: ["Milk", "Banana", "Orange Juice"],
+				ownerId: jane.id,
+			},
+			{
+				name: "Avocado Toast",
+				description: "Quick and healthy breakfast",
+				ingredients: ["Avocado", "Bread", "Pepper"],
 				ownerId: jane.id,
 			},
 		],

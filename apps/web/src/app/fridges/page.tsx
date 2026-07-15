@@ -11,6 +11,9 @@ import {
 	useDeleteAllProducts,
 	useDeleteProduct,
 	useDeleteWholeFridge,
+	useGiftAllProducts,
+	useGiftAllProductsFromFridge,
+	useGiftProduct,
 	useProduct,
 } from "@/lib/api-hooks";
 
@@ -26,13 +29,23 @@ export default function FridgePage() {
 	const router = useRouter();
 
 	const [authChecked, setAuthChecked] = useState(false);
-
 	const [location, setLocation] = useState("");
 	const [fridgeID, setFridgeId] = useState("");
 	const [adding, setAdding] = useState(false);
 	const [checkingDetails, setCheckingDetails] = useState(false);
 	const [checkingId, setCheckingId] = useState("");
 	const [selectedFridgeId, setSelectedFridgeId] = useState("");
+	const [isGifting, setIsGifting] = useState(false);
+	const [giftingId, setGiftingId] = useState("");
+	const [receiverEmail, setReceiverEmail] = useState("");
+
+	const [isGiftingWhole, setIsGiftingWhole] = useState(false);
+	const [giftingIdWhole, setGiftingIdWhole] = useState("");
+	const [receiverEmailWhole, setReceiverEmailWhole] = useState("");
+
+	const [isGiftingAllProducts, setIsGiftingAllProducts] = useState(false);
+	const [receiverEmailAllProducts, setReceiverEmailAllProducts] =
+		useState("");
 
 	useEffect(() => {
 		if (!isAuthenticated()) {
@@ -43,11 +56,15 @@ export default function FridgePage() {
 	}, [router]);
 
 	const fridges = useAllFridges();
+	const fridgesData = fridges.data;
 	const products = useAllProducts(location, fridgeID);
 	const addproduct = useAddProductToFridge();
 	const checkedProduct = useProduct(checkingId);
 	const deleteFridge = useDeleteWholeFridge();
 	const deleteAllItems = useDeleteAllProducts();
+	const giftProduct = useGiftProduct();
+	const giftProductWhole = useGiftAllProductsFromFridge();
+	const giftAllProducts = useGiftAllProducts();
 
 	const deleteProduct = useDeleteProduct();
 	const productsByFridge = new Map<string, ProductView[]>();
@@ -114,80 +131,111 @@ export default function FridgePage() {
 			/>
 			<h1 className="font-semibold mb-2">Fridges:</h1>
 			<div className="space-y-4">
-				{filteredFridges.map((fridge) => {
-					const fridgeProducts =
-						productsByFridge.get(fridge.id) ?? [];
+				{fridgesData &&
+					filteredFridges.map((fridge) => {
+						const fridgeProducts =
+							productsByFridge.get(fridge.id) ?? [];
 
-					return (
-						<Card key={fridge.id} className="p-4">
-							<div className="flex items-center justify-between mb-4">
-								<div>
-									<h2 className="font-semibold">
-										Fridge: {fridge.id}
-									</h2>
+						return (
+							<Card key={fridge.id} className="p-4">
+								<div className="flex items-center justify-between mb-4">
+									<div>
+										<h2 className="font-semibold">
+											ID:{" "}
+											{fridge.id !== undefined
+												? fridge.id.substring(0, 28) +
+													"..."
+												: "No ID"}
+										</h2>
 
-									<p className="text-sm text-slate-500">
-										Location: {fridge.location}
-									</p>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										type="button"
-										variant="danger"
-										onClick={() => {
-											deleteFridge.mutate({
-												fridgeId: fridge.id,
-											});
-										}}
-									>
-										Delete all
-									</Button>
-
-									<Button
-										onClick={() => {
-											setSelectedFridgeId(fridge.id);
-											setAdding(true);
-										}}
-									>
-										Add product
-									</Button>
-								</div>
-							</div>
-
-							{fridgeProducts.length === 0 ? (
-								<p className="text-sm text-slate-500">
-									No products in this fridge.
-								</p>
-							) : (
-								<div className="divide-y divide-slate-100">
-									{fridgeProducts.map((product) => (
-										<div
-											key={product.id}
-											className="py-2 flex items-center justify-between"
+										<p className="text-sm text-slate-500">
+											Location: {fridge.location}
+										</p>
+									</div>
+									<div className="flex gap-2">
+										<Button
+											type="button"
+											variant="danger"
+											onClick={() => {
+												deleteFridge.mutate({
+													fridgeId: fridge.id,
+												});
+											}}
 										>
-											<p>
-												<span className="font-bold">
-													Product:
-												</span>{" "}
-												{product.name}
-											</p>
+											Delete all
+										</Button>
 
-											<Button
-												variant="ghost"
-												onClick={() => {
-													setCheckingDetails(true);
-													setCheckingId(product.id);
-												}}
-											>
-												View Details
-											</Button>
-										</div>
-									))}
+										<Button
+											onClick={() => {
+												setSelectedFridgeId(fridge.id);
+												setAdding(true);
+											}}
+										>
+											Add product
+										</Button>
+
+										<Button
+											onClick={() => {
+												setIsGiftingWhole(true);
+												setGiftingIdWhole(fridge.id);
+											}}
+										>
+											Gift whole fridge
+										</Button>
+									</div>
 								</div>
-							)}
-						</Card>
-					);
-				})}
+
+								{fridgeProducts.length === 0 ? (
+									<p className="text-sm text-slate-500">
+										You have no products in this fridge.
+									</p>
+								) : (
+									<div className="divide-y divide-slate-100">
+										{fridgeProducts.map((product) => (
+											<div
+												key={product.id}
+												className="py-2 flex items-center justify-between"
+											>
+												<p>
+													<span className="font-bold">
+														Product:
+													</span>{" "}
+													{product.name}
+												</p>
+												<div>
+													<Button
+														variant="ghost"
+														onClick={() => {
+															setIsGifting(true);
+															setGiftingId(
+																product.id,
+															);
+														}}
+													>
+														Gift product
+													</Button>
+
+													<Button
+														variant="ghost"
+														onClick={() => {
+															setCheckingDetails(
+																true,
+															);
+															setCheckingId(
+																product.id,
+															);
+														}}
+													>
+														View Details
+													</Button>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+							</Card>
+						);
+					})}
 			</div>
 			{adding && (
 				<div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4 text-sm text-slate-500">
@@ -215,7 +263,17 @@ export default function FridgePage() {
 					</Card>
 				</div>
 			)}
-			<div className="mt-3 flex  justify-end">
+			<div className="mt-3 flex  justify-end pt-2 gap-2">
+				<Button
+					type="button"
+					variant="secondary"
+					onClick={() => {
+						setIsGiftingAllProducts(true);
+					}}
+				>
+					Gift all your products
+				</Button>
+
 				<Button
 					type="button"
 					variant="danger"
@@ -224,6 +282,102 @@ export default function FridgePage() {
 					Delete all your products
 				</Button>
 			</div>
+			{isGifting && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+					<Card className="w-full max-w-md p-5">
+						<div className="mb-4">
+							<h2 className="mb-3 text-base font-medium">
+								Gifting product:
+							</h2>
+
+							<Input
+								placeholder="Email of the receiver user"
+								value={receiverEmail}
+								onChange={(event) =>
+									setReceiverEmail(event.target.value)
+								}
+								className="mb-4"
+							/>
+						</div>
+
+						<div className="flex justify-end pt-2 gap-2">
+							<div className="flex justify-end pt-2 gap-2">
+								<Button
+									type="button"
+									variant="primary"
+									onClick={() => {
+										giftProduct.mutate({
+											productId: giftingId,
+											recipientEmail: receiverEmail,
+										});
+										setIsGifting(false);
+									}}
+								>
+									Gift product
+								</Button>
+
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() => setIsGifting(false)}
+								>
+									Back
+								</Button>
+							</div>
+						</div>
+					</Card>
+				</div>
+			)}{" "}
+			{isGiftingAllProducts && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+					<Card className="w-full max-w-md p-5">
+						<div className="mb-4">
+							<h2 className="mb-3 text-base font-medium">
+								Gifting product:
+							</h2>
+
+							<Input
+								placeholder="Email of the receiver user"
+								value={receiverEmailAllProducts}
+								onChange={(event) =>
+									setReceiverEmailAllProducts(
+										event.target.value,
+									)
+								}
+								className="mb-4"
+							/>
+						</div>
+
+						<div className="flex justify-end pt-2 gap-2">
+							<div className="flex justify-end pt-2 gap-2">
+								<Button
+									type="button"
+									variant="primary"
+									onClick={() => {
+										giftAllProducts.mutate({
+											recipientEmail:
+												receiverEmailAllProducts,
+										});
+										setIsGiftingAllProducts(false);
+									}}
+								>
+									Gift fridge
+								</Button>
+
+								<Button
+									type="button"
+									variant="secondary"
+									onClick={() =>
+										setIsGiftingAllProducts(false)
+									}
+								>
+									Back
+								</Button>
+							</div>
+						</div>
+					</Card>
+				</div>
+			)}{" "}
 			{checkingDetails && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
 					<Card className="w-full max-w-md p-5">

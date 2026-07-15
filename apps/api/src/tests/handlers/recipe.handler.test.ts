@@ -11,6 +11,7 @@ import { getRecipe } from "../../controllers/fridge/handlers/get.recipe";
 import { getMissingIngredients } from "../../controllers/fridge/handlers/getmissing.recipe";
 import { prisma } from "../../lib/prisma";
 import { ProductType } from "../../contracts/product.body";
+import { getSuggestions } from "../../controllers/fridge/handlers/llm.suggestion.handler";
 
 const fridgeFixtures = [
 	{
@@ -76,6 +77,25 @@ describe("Recipe Handlers", () => {
 				}),
 			),
 		);
+
+		await prisma.product.createMany({
+			data: [
+				{
+					name: "Flour",
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+					type: ProductType.FOOD,
+					size: 1,
+				},
+				{
+					name: "Tomato",
+					ownerId: users[0].id,
+					fridgeId: fridges[0].id,
+					type: ProductType.FOOD,
+					size: 1,
+				},
+			],
+		});
 	});
 
 	describe("createRecipe handler", () => {
@@ -383,5 +403,12 @@ describe("Recipe Handlers", () => {
 				expect(err.message).to.equal("Recipe not found");
 			}
 		});
+	});
+
+	describe("LLM suggestions handler", () => {
+		it("should return something", async () => {
+			const suggestions = await getSuggestions(users[0].id);
+			expect(suggestions).not.be.null;
+		}).timeout(10000); // extend the timeout, https://stackoverflow.com/questions/15971167/how-to-increase-timeout-for-a-single-test-case-in-mocha
 	});
 });

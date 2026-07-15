@@ -444,6 +444,20 @@ export type UpdateUserRecipeResponses = {
     default: unknown;
 };
 
+export type GetSuggestionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/recipes/suggestions';
+};
+
+export type GetSuggestionsResponses = {
+    /**
+     * Suggestions correctly fetched.
+     */
+    default: unknown;
+};
+
 export type GetMissingIngredientsData = {
     body?: never;
     path: {
